@@ -1,10 +1,18 @@
+"""
+Calculo de los indices EP y CP en CFSv2
+"""
+# ---------------------------------------------------------------------------- #
+out_dir = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/'
+save = True
 
+# ---------------------------------------------------------------------------- #
 import numpy as np
 import xarray as xr
 from eofs.xarray import Eof
+import matplotlib.pyplot as plt
 
-
-def Compute(data, modeL, save=False):
+# ---------------------------------------------------------------------------- #
+def Compute(data, modeL):
 
     weights = np.sqrt(np.abs(np.cos(np.radians(data.lat))))
     try:
@@ -38,7 +46,7 @@ def Compute(data, modeL, save=False):
 
         eof_L_r = solver.eofsAsCovariance(neofs=2)
         pcs = solver.pcs(pcscaling=1)
-        var_per = np.around(solver.varianceFraction(neigs=2).values * 100, 1)
+        #var_per = np.around(solver.varianceFraction(neigs=2).values * 100, 1)
 
         #pcs = pcs.rename({'time2': 'time'})
         pc1_f_r = pcs[:,0]
@@ -135,14 +143,84 @@ def Compute(data, modeL, save=False):
 
             print('Done concat')
 
-    pc1_f_r.rename({'time2':'time'})
-    pc2_f_r.rename({'time2':'time'})
+    pc1_f_r = pc1_f_r.rename({'time2':'time'})
+    pc2_f_r = pc2_f_r.rename({'time2':'time'})
 
     return pc1_f_r, pc2_f_r, eof_f_r, pc1_f_em, pc2_f_em, eof_f_em
 
+def CheckSign(eof, pc1, pc2):
+
+    pc1_f = []
+    pc2_f = []
+    for l in eof.L.values:
+        # try:
+        #     print('test0')
+        sign_pc1 = np.sign(eof.sel(mode=0, L=l, lon=slice(210, 250)).mean())
+        sign_pc2 = np.sign(eof.sel(mode=1, L=l, lon=slice(150, 180)).mean())
+        # except:
+        #     print('test1')
+        #     sign_pc1 = np.sign(eof.sel(mode=0, lon=slice(210, 250))[l,:,:].mean())
+        #     sign_pc2 = np.sign(eof.sel(mode=1, lon=slice(150, 180))[l,:,:].mean())
+
+        if sign_pc1 < 0:
+            pc1_L = pc1.sel(time=pc1.time.dt.month.isin(10 - l))*sign_pc1
+        else:
+            pc1_L = pc1.sel(time=pc1.time.dt.month.isin(10 - l))
+
+        if sign_pc2 < 0:
+            pc2_L = pc2.sel(time=pc2.time.dt.month.isin(10 - l))*sign_pc2
+        else:
+            pc2_L = pc2.sel(time=pc2.time.dt.month.isin(10 - l))
+
+
+        pc1_f.append(pc1_L)
+        pc2_f.append(pc2_L)
+
+    pc1_f = xr.concat(pc1_f, 'time')
+    pc2_f = xr.concat(pc2_f, 'time')
+
+    return pc1_f, pc2_f
+
+def CheckEvent(sst, cp, ep, year, lead, r):
+    month = 10-lead
+    if month < 10:
+        month = '0'+str(month)
+
+    cp_val = np.round(cp.sel(r=r, time=f'{year}-{month}-01').values, 3)
+    ep_val = np.round(ep.sel(r=r, time=f'{year}-{month}-01').values, 3)
+
+    plt.imshow(sst.sel(r=r, time=f'{year}-{month}-01')['sst'][0, :, :])
+    plt.title(f'CP:{cp_val}, EP:{ep_val}')
+    plt.show()
+# ---------------------------------------------------------------------------- #
+
 sst = xr.open_dataset('/pikachu/datos/luciano.andrian/cases_fields/sst_son.nc')
-sst = sst.sel(lon=slice(110,290), lat=slice(-10,10))
+sst_sel = sst.sel(lon=slice(110,290), lat=slice(-10,10))
 
-pc1_f_r, pc2_f_r, eof_f_r, pc1_f_em, pc2_f_em, eof_f_em = Compute(sst, False)
+pc1_f_r, pc2_f_r, eof_f_r, _, _, _ = Compute(sst_sel, False)
 
+# plt.imshow(eof_f_r.sel(mode=0, L=0), vmin=-1, vmax=1, cmap='RdBu_r')
+# plt.show()
+# plt.imshow(eof_f_r.sel(mode=1, L=0), vmin=-1, vmax=1, cmap='RdBu_r')
+# plt.show()
 
+# En algunos leads el oef puede tener signo cambiado
+
+# Acomodo los signos de cada pc en funcion del EOF
+pc1_ch, pc2_ch = CheckSign(eof_f_r, pc1_f_r, pc2_f_r)
+
+cp = (pc1_ch + pc2_ch)/np.sqrt(2)
+cp = cp.to_dataset(name='sst')
+ep = (pc1_ch - pc2_ch)/np.sqrt(2)
+ep = ep.to_dataset(name='sst')
+
+# ---------------------------------------------------------------------------- #
+if save:
+    print('Saving...')
+    cp.to_netcdf(f'{out_dir}CP_SON_Leads_r_CFSv2.nc')
+    ep.to_netcdf(f'{out_dir}EP_SON_Leads_r_CFSv2.nc')
+
+print('# --------------------------------------------------------------------#')
+print('# --------------------------------------------------------------------#')
+print('done')
+print('# --------------------------------------------------------------------#')
