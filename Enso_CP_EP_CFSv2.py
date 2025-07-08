@@ -124,22 +124,31 @@ def Compute(data, modeL):
 
             # para guardar...
             if l == 0:
-                pc1_f_r = pc1_l_r.drop('L')
-                pc2_f_r = pc2_l_r.drop('L')
+                pc1_f_r = pc1_l_r#.drop('L')
+                pc2_f_r = pc2_l_r#.drop('L')
                 eof_f_r = eof_l_r
 
-                pc1_f_em = pc1_l_em.drop('L')
-                pc2_f_em = pc2_l_em.drop('L')
+                pc1_f_em = pc1_l_em#.drop('L')
+                pc2_f_em = pc2_l_em#.drop('L')
                 eof_f_em = eof_l_em
 
             else:
-                pc1_f_r = xr.concat([pc1_f_r, pc1_l_r.drop('L')], dim='time2')
-                pc2_f_r = xr.concat([pc2_f_r, pc2_l_r.drop('L')], dim='time2')
+                # pc1_f_r = xr.concat([pc1_f_r, pc1_l_r.drop('L')], dim='time2')
+                # pc2_f_r = xr.concat([pc2_f_r, pc2_l_r.drop('L')], dim='time2')
+                # eof_f_r = xr.concat([eof_f_r, eof_l_r], dim='L')
+                #
+                # pc1_f_em = xr.concat([pc1_f_em, pc1_l_em.drop('L')], dim='time')
+                # pc2_f_em = xr.concat([pc2_f_em, pc2_l_em.drop('L')], dim='time')
+                # eof_f_em = xr.concat([eof_f_em, eof_l_em], dim='L')
+
+                pc1_f_r = xr.concat([pc1_f_r, pc1_l_r], dim='time2')
+                pc2_f_r = xr.concat([pc2_f_r, pc2_l_r], dim='time2')
                 eof_f_r = xr.concat([eof_f_r, eof_l_r], dim='L')
 
-                pc1_f_em = xr.concat([pc1_f_em, pc1_l_em.drop('L')], dim='time')
-                pc2_f_em = xr.concat([pc2_f_em, pc2_l_em.drop('L')], dim='time')
+                pc1_f_em = xr.concat([pc1_f_em, pc1_l_em], dim='time')
+                pc2_f_em = xr.concat([pc2_f_em, pc2_l_em], dim='time')
                 eof_f_em = xr.concat([eof_f_em, eof_l_em], dim='L')
+
 
             print('Done concat')
 

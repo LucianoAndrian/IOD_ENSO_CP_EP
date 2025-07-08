@@ -312,7 +312,6 @@ def ClassifyEventsPerMember(r, indices, idx1, idx2, idx3, data_ref,
     aux_events['neutros'] = neutros
 
     return aux_events
-
 # Funciones chatgpt
 def merge_event_dicts(dict1, dict2):
     merged = {}
