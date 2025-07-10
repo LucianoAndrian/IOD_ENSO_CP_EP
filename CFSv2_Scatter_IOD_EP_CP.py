@@ -17,51 +17,58 @@ def SelectParIndex(case, idx1_name, idx2_name,
     cases_dir = '/pikachu/datos/luciano.andrian/cases_fields_EP_CP/'
     index_dir = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/'
 
-    aux = xr.open_dataset(f'{cases_dir}{idx1_name}_{case}').__mul__(1/idx1_sd)
-    aux_var_name = list(aux.data_vars)[0]
-    aux2 = xr.open_dataset(f'{cases_dir}{idx2_name}_{case}').__mul__(1/idx2_sd)
-    aux2_var_name = list(aux.data_vars)[0]
+    try:
+        aux = xr.open_dataset(f'{cases_dir}{idx1_name}_{case}').__mul__(1/idx1_sd)
+        aux_var_name = list(aux.data_vars)[0]
+        aux2 = xr.open_dataset(f'{cases_dir}{idx2_name}_{case}').__mul__(1/idx2_sd)
+        aux2_var_name = list(aux.data_vars)[0]
+        check = True
+    except:
+        check = False
 
-    if by_r:
-        if open_idx1:
-            idx1 = (xr.open_dataset(
-                f'{index_dir}{idx1_name}_SON_Leads_r_CFSv2.nc')
-                     .__mul__(1/idx1_sd))
+    if check is True:
+        if by_r:
+            if open_idx1:
+                idx1 = (xr.open_dataset(
+                    f'{index_dir}{idx1_name}_SON_Leads_r_CFSv2.nc')
+                        .__mul__(1 / idx1_sd))
 
-            aux3 = idx1.sel(r=aux.r, time=aux.time)
-            aux3_var_name = list(aux.data_vars)[0]
+                aux3 = idx1.sel(r=aux.r, time=aux.time)
+                aux3_var_name = list(aux.data_vars)[0]
 
-            if len(np.where(aux3.L.values==aux.L.values)[0]):
-                return aux[aux_var_name].values.round(2), \
-                    aux3[aux3_var_name].values.round(2)
-            else:
-                print('Error: CASES')
-                return [], []
+                if len(np.where(aux3.L.values == aux.L.values)[0]):
+                    return aux[aux_var_name].values.round(2), \
+                        aux3[aux3_var_name].values.round(2)
+                else:
+                    print('Error: CASES')
+                    return [], []
 
-        if open_idx2:
-            idx2 = (xr.open_dataset(
-                f'{index_dir}{idx2_name}_SON_Leads_r_CFSv2.nc')
-                    .__mul__(1/idx2_sd))
+            if open_idx2:
+                idx2 = (xr.open_dataset(
+                    f'{index_dir}{idx2_name}_SON_Leads_r_CFSv2.nc')
+                        .__mul__(1 / idx2_sd))
 
-            aux3 = idx2.sel(r=aux.r, time=aux.time)
-            aux3_var_name = list(aux.data_vars)[0]
+                aux3 = idx2.sel(r=aux.r, time=aux.time)
+                aux3_var_name = list(aux.data_vars)[0]
 
-            if len(np.where(aux3.L.values == aux.L.values)[0]):
-                return aux[aux_var_name].values.round(2), \
-                    aux3[aux3_var_name].values.round(2)
-            else:
-                print('Error: CASES')
-                return [], []
-    else:
-        aux2 = aux2.sel(time=aux2.time.isin([aux.time.values]))
-
-        if len(aux2.time) == len(aux.time):
-            return aux[aux_var_name].values.round(2), \
-                aux2[aux2_var_name].values.round(2)
+                if len(np.where(aux3.L.values == aux.L.values)[0]):
+                    return aux[aux_var_name].values.round(2), \
+                        aux3[aux3_var_name].values.round(2)
+                else:
+                    print('Error: CASES')
+                    return [], []
         else:
-            print('Error: CASES')
-            return [], []
+            aux2 = aux2.sel(time=aux2.time.isin([aux.time.values]))
 
+            if len(aux2.time) == len(aux.time):
+                return aux[aux_var_name].values.round(2), \
+                    aux2[aux2_var_name].values.round(2)
+            else:
+                print('Error: CASES')
+                return [], []
+
+    else:
+        return [], []
 
 def PlotScatter(idx1_name, idx2_name, idx1_sd, idx2_sd, save=False, out_dir=''):
     idx1_name = idx1_name.upper()
@@ -85,12 +92,6 @@ def PlotScatter(idx1_name, idx2_name, idx1_sd, idx2_sd, save=False, out_dir=''):
                                              by_r=False,
                                              open_idx1=False, open_idx2=False)
 
-    # idx2_sim_pos, dmi_in_{idx2}_sim_pos = SelectParIndex(case=case,
-    #                                       idx1_name='EP', idx2_name='DMI',
-    #                                       idx1_sd=idx2_sd, idx2_sd=idx1_sd,
-    #                                       by_r=False,
-    #                                       open_idx1=False, open_idx2=False)
-
     case = f'CFSv2_simultaneos_dobles_{idx1}_{idx2}_neg_SON.nc'
     idx1_sim_neg, idx2_sim_neg = SelectParIndex(case=case,
                                              idx1_name=idx1_name,
@@ -99,15 +100,21 @@ def PlotScatter(idx1_name, idx2_name, idx1_sd, idx2_sd, save=False, out_dir=''):
                                              by_r=False,
                                              open_idx1=False, open_idx2=False)
 
-    case = f'CFSv2_puros_{idx1}_pos_SON.nc'
-    idx1_puros_pos, idx2_in_idx1_puros_pos = SelectParIndex(case=case,
-                                                        idx1_name=idx1_name,
-                                                        idx2_name=idx2_name,
-                                                        idx1_sd=idx1_sd,
-                                                        idx2_sd=idx2_sd,
-                                                        by_r=False,
-                                                        open_idx1=False,
-                                                        open_idx2=False)
+    case = f'CFSv2_simultaneos_dobles_op_{idx1}_pos_{idx2}_neg_SON.nc'
+    idx1_pos_idx2_neg, idx2_in_idx1_pos_idx2_neg = SelectParIndex(case=case,
+                                             idx1_name=idx1_name,
+                                             idx2_name=idx2_name,
+                                             idx1_sd=idx1_sd, idx2_sd=idx2_sd,
+                                             by_r=False,
+                                             open_idx1=False, open_idx2=False)
+
+    case = f'CFSv2_simultaneos_dobles_op_{idx1}_neg_{idx2}_pos_SON.nc'
+    idx1_neg_idx2_pos, idx2_in_idx1_neg_idx2_pos = SelectParIndex(case=case,
+                                             idx1_name=idx1_name,
+                                             idx2_name=idx2_name,
+                                             idx1_sd=idx1_sd, idx2_sd=idx2_sd,
+                                             by_r=False,
+                                             open_idx1=False, open_idx2=False)
 
     case = f'CFSv2_puros_{idx1}_neg_SON.nc'
     idx1_puros_neg, idx2_in_idx1_puros_neg = SelectParIndex(case=case,
@@ -149,12 +156,35 @@ def PlotScatter(idx1_name, idx2_name, idx1_sd, idx2_sd, save=False, out_dir=''):
                                                        open_idx1=False,
                                                        open_idx2=False)
 
-    # case = 'CFSv2_todo_dmi_pos_SON.nc'
-    # dmi_todo, idx2_todo = SelectParIndex(case=case,
-    #                                       idx1_name='EP', idx2_name='DMI',
-    #                                       idx1_sd=idx2_sd, idx2_sd=idx1_sd,
-    #                                       by_r=False,
-    #                                       open_idx1=False, open_idx2=False)
+    case = f'CFSv2_puros_{idx2}_neg_SON.nc'
+    idx2_puros_neg, idx1_in_idx2_puros_neg = SelectParIndex(case=case,
+                                                       idx1_name=idx2_name,
+                                                       idx2_name=idx1_name,
+                                                       idx1_sd=idx2_sd,
+                                                       idx2_sd=idx1_sd,
+                                                       by_r=False,
+                                                       open_idx1=False,
+                                                       open_idx2=False)
+
+
+    # case = f'CFSv2_todo_{idx1}_pos_SON.nc'
+    # idx1_todo_pos, idx2_in_idx1_todo_pos = SelectParIndex(case=case,
+    #                                      idx1_name=idx1_name,
+    #                                      idx2_name=idx2_name,
+    #                                      idx1_sd=idx2_sd, idx2_sd=idx1_sd,
+    #                                      by_r=False,
+    #                                      open_idx1=False,
+    #                                      open_idx2=False)
+    #
+    # case = f'CFSv2_todo_{idx1}_neg_SON.nc'
+    # idx1_todo_neg, idx2_in_idx1_todo_neg = SelectParIndex(case=case,
+    #                                      idx1_name=idx1_name,
+    #                                      idx2_name=idx2_name,
+    #                                      idx1_sd=idx2_sd, idx2_sd=idx1_sd,
+    #                                      by_r=False,
+    #                                      open_idx1=False,
+    #                                      open_idx2=False)
+
 
     import matplotlib.pyplot as plt
     dpi = 100
@@ -194,21 +224,31 @@ def PlotScatter(idx1_name, idx2_name, idx1_sd, idx2_sd, save=False, out_dir=''):
                edgecolor='k', color='#63A6FF', alpha=1,
                label=f'{idx1_name}- & {idx2_name}-')
 
-    # # sim opp. sing
-    # ax.scatter(x=idx1_pos_idx2_neg, y=idx2_in_idx1_pos_idx2_neg, marker='o',
-    #            s=30*scatter_size_fix, edgecolor='k', color='#FF9232', alpha=1,
-    #            label='index2- & index1+')
-    # ax.scatter(x=idx1_neg_idx2_pos, y=idx2_in_idx1_neg_idx2_pos, marker='o',
-    #             s=30*scatter_size_fix, edgecolor='k', color='gold', alpha=1,
-    #            label='index2+ & index1-')
+    # sim opp. sing
+    ax.scatter(x=idx1_pos_idx2_neg, y=idx2_in_idx1_pos_idx2_neg, marker='o',
+               s=30*scatter_size_fix, edgecolor='k', color='#FF9232', alpha=1,
+               label=f'{idx1_name}+ & {idx2_name}-')
+    ax.scatter(x=idx1_neg_idx2_pos, y=idx2_in_idx1_neg_idx2_pos, marker='o',
+                s=30*scatter_size_fix, edgecolor='k', color='gold', alpha=1,
+               label=f'{idx1_name}- & {idx2_name}+')
+
+    # # tdo
+    # ax.scatter(x=idx1_todo_pos, y=idx2_in_idx1_todo_pos, marker='x',
+    #            label=f'{idx1_name} vs. {idx2_name} todo',
+    #            s=10 * scatter_size_fix, edgecolor='k', color='k', alpha=1)
+    #
+    # ax.scatter(x=idx1_todo_neg, y=idx2_in_idx1_todo_neg, marker='x',
+    #            label=f'{idx1_name} vs. {idx2_name} todo',
+    #            s=10 * scatter_size_fix, edgecolor='k', color='k', alpha=1)
 
     ax.legend(loc=(.01, .57), fontsize=label_legend_size)
     ax.tick_params(axis='both', which='major', labelsize=tick_label_size, pad=1)
     ax.set_ylim((-5, 5))
     ax.set_xlim((-5, 5))
-    ax.axhspan(-.5 / idx1_sd.sst.values, .5 / idx2_sd.sst.values,
+    ax.axhspan(-.5 , .5,#/ idx1_sd.sst.values, .5 / idx1_sd.sst.values,
                alpha=0.2, color='black', zorder=0)
-    ax.axvspan(-.5, .5, alpha=0.2, color='black', zorder=0)
+    ax.axvspan(-.5 , .5,#/ idx2_sd.sst.values, .5 / idx2_sd.sst.values,
+               alpha=0.2, color='black', zorder=0)
     ax.set_xlabel(f'{idx1_name}', size=in_label_size)
     ax.set_ylabel(f'{idx2_name}', size=in_label_size)
     ax.text(-4.9, 4.6, f'{idx2_name}+/{idx1_name}-', dict(size=in_label_size))

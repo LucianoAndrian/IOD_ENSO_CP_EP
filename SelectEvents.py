@@ -73,7 +73,8 @@ def InitEvent_dict(variables):
 
     signs = ['pos', 'neg']
     dobles = [f'{index1}_{index2}', f'{index1}_{index3}', f'{index2}_{index3}']
-    dobles_op = [f'{index1}_pos_{index2}_neg', f'{index1}_neg_{index3}_pos',
+
+    dobles_op = [f'{index1}_pos_{index2}_neg', f'{index1}_neg_{index2}_pos',
                  f'{index1}_pos_{index3}_neg', f'{index1}_neg_{index3}_pos',
                  f'{index2}_pos_{index3}_neg', f'{index2}_neg_{index3}_pos']
 
@@ -186,6 +187,12 @@ def ClassifyEventsPerMember(r, indices, idx1, idx2, idx3, data_ref,
     idx1_neg_idx3_pos = SetDates(idx1_idx3_neg, idx3_idx1_pos)
     idx2_pos_idx3_neg = SetDates(idx2_idx3_pos, idx3_idx2_neg)
     idx2_neg_idx3_pos = SetDates(idx2_idx3_neg, idx3_idx2_pos)
+    for t in [idx1_pos_idx2_neg, idx1_neg_idx2_pos, idx1_pos_idx3_neg,
+              idx1_neg_idx3_pos, idx2_pos_idx3_neg, idx2_neg_idx3_pos]:
+        if len(t) > 0:
+            print('# ------ #')
+            print(r)
+            print('# ------ #')
 
     # Triples op
     idx1_pos_idx2_pos_idx3_neg = SetDates(idx1_triples_pos, idx2_triples_pos,
@@ -251,7 +258,7 @@ def ClassifyEventsPerMember(r, indices, idx1, idx2, idx3, data_ref,
 
     # ------------------------------------------------------------------------ #
 
-    # Todo: 6
+    # Tdo: 6
     aux_events['todo'][idx1_name]['pos'] = idx1_pos
     aux_events['todo'][idx1_name]['neg'] = idx1_neg
     aux_events['todo'][idx2_name]['pos'] = idx2_pos
@@ -317,8 +324,13 @@ def merge_event_dicts(dict1, dict2):
     merged = {}
 
     def merge_ds(ds1, ds2):
+        if ds1 is None:
+            return ds2
+        if ds2 is None:
+            return ds1
         if not hasattr(ds1, 'time') or not hasattr(ds2, 'time'):
-            raise TypeError(f"Uno de los elementos no tiene atributo `.time`: {type(ds1)}, {type(ds2)}")
+            raise TypeError(
+                f"Uno de los elementos no tiene atributo `.time`: {type(ds1)}, {type(ds2)}")
         if ds1.time.size == 0:
             return ds2
         if ds2.time.size == 0:
@@ -393,6 +405,8 @@ data_dmi = dmi.where(np.abs(dmi) > 0.5*dmi.mean('r').std())
 data_ep = ep.where(np.abs(ep) > 0.5*ep.mean('r').std())
 data_cp = cp.where(np.abs(cp) > 0.5*cp.mean('r').std())
 
+data_ep['sst'] = data_ep['sst'].T
+data_cp['sst'] = data_cp['sst'].T
 # ---------------------------------------------------------------------------- #
 indices = ['dmi', 'ep', 'cp']
 events = InitEvent_dict(indices)
