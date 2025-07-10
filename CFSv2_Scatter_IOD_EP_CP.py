@@ -1,14 +1,25 @@
-
+"""
+Scatter plots
+"""
+# ---------------------------------------------------------------------------- #
+save = False
+out_dir = '/home/luciano.andrian/doc/IOD_ENSO_CP_EP/salidas/'
+index_dir = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/'
+# ---------------------------------------------------------------------------- #
 import xarray as xr
 import numpy as np
+import matplotlib.pyplot as plt
 
-index_dir = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/'
-
-
+if save:
+    dpi = 300
+else:
+    dpi = 100
+# ---------------------------------------------------------------------------- #
 sd_dmi_s = xr.open_dataset(index_dir + 'DMI_SON_Leads_r_CFSv2.nc').std()
 sd_ep_s = xr.open_dataset(index_dir + 'EP_SON_Leads_r_CFSv2.nc').std()
 sd_cp_s = xr.open_dataset(index_dir + 'CP_SON_Leads_r_CFSv2.nc').std()
 
+# ---------------------------------------------------------------------------- #
 def SelectParIndex(case, idx1_name, idx2_name,
                    idx1_sd, idx2_sd, by_r=False,
                    open_idx1=False, open_idx2=False):
@@ -70,7 +81,8 @@ def SelectParIndex(case, idx1_name, idx2_name,
     else:
         return [], []
 
-def PlotScatter(idx1_name, idx2_name, idx1_sd, idx2_sd, save=False, out_dir=''):
+def PlotScatter(idx1_name, idx2_name, idx1_sd, idx2_sd, save=save, 
+                out_dir=out_dir,  name_fig='fig', dpi=dpi):
     idx1_name = idx1_name.upper()
     idx1 = idx1_name.lower()
     idx2_name = idx2_name.upper()
@@ -185,9 +197,6 @@ def PlotScatter(idx1_name, idx2_name, idx1_sd, idx2_sd, save=False, out_dir=''):
     #                                      open_idx1=False,
     #                                      open_idx2=False)
 
-
-    import matplotlib.pyplot as plt
-    dpi = 100
     in_label_size = 13
     label_legend_size = 12
     tick_label_size = 11
@@ -234,11 +243,11 @@ def PlotScatter(idx1_name, idx2_name, idx1_sd, idx2_sd, save=False, out_dir=''):
 
     # # tdo
     # ax.scatter(x=idx1_todo_pos, y=idx2_in_idx1_todo_pos, marker='x',
-    #            label=f'{idx1_name} vs. {idx2_name} todo',
+    #            label=f'{idx1_name} vs. {idx2_name} tdo',
     #            s=10 * scatter_size_fix, edgecolor='k', color='k', alpha=1)
     #
     # ax.scatter(x=idx1_todo_neg, y=idx2_in_idx1_todo_neg, marker='x',
-    #            label=f'{idx1_name} vs. {idx2_name} todo',
+    #            label=f'{idx1_name} vs. {idx2_name} tdo',
     #            s=10 * scatter_size_fix, edgecolor='k', color='k', alpha=1)
 
     ax.legend(loc=(.01, .57), fontsize=label_legend_size)
@@ -263,17 +272,25 @@ def PlotScatter(idx1_name, idx2_name, idx1_sd, idx2_sd, save=False, out_dir=''):
     plt.show()
 
     if save:
-        plt.savefig(out_dir + 'f08.pdf', dpi=dpi, bbox_inches='tight')
+        plt.savefig(f'{out_dir}{name_fig}.png', dpi=dpi, bbox_inches='tight')
         plt.close('all')
     else:
         plt.show()
 
-
+# ---------------------------------------------------------------------------- #
 PlotScatter(idx1_name='DMI', idx2_name='EP',
-            idx1_sd=sd_dmi_s, idx2_sd= sd_ep_s, save=False, out_dir='')
+            idx1_sd=sd_dmi_s, idx2_sd= sd_ep_s, save=save,
+            name_fig='Scatter_DMI-EP')
 
 PlotScatter(idx1_name='DMI', idx2_name='CP',
-            idx1_sd=sd_dmi_s, idx2_sd= sd_cp_s, save=False, out_dir='')
+            idx1_sd=sd_dmi_s, idx2_sd= sd_cp_s, save=save,
+            name_fig='Scatter_DMI-CP')
 
 PlotScatter(idx1_name='EP', idx2_name='CP',
-            idx1_sd=sd_ep_s, idx2_sd= sd_cp_s, save=False, out_dir='')
+            idx1_sd=sd_ep_s, idx2_sd= sd_cp_s, save=save,
+            name_fig='Scatter_EP-CP')
+
+print('# --------------------------------------------------------------------#')
+print('# --------------------------------------------------------------------#')
+print('done')
+print('# --------------------------------------------------------------------#')
