@@ -55,6 +55,11 @@ var_file = 'hgt_son.nc'
 div = len(files) // 2
 Run(files, var_file, div, data_dir=data_dir)
 
+# HGT750 --------------------------------------------------------------------- #
+var_file = 'hgt750_son_detrend.nc'
+div = len(files) // 2
+Run(files, var_file, div, data_dir=data_dir)
+
 # Tref ----------------------------------------------------------------------- #
 var_file = 'tref_son.nc'
 div = len(files) // 2

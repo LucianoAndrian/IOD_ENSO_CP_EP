@@ -2,7 +2,7 @@
 Scatter plots
 """
 # ---------------------------------------------------------------------------- #
-save = False
+save = True
 out_dir = '/home/luciano.andrian/doc/IOD_ENSO_CP_EP/salidas/'
 index_dir = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/'
 # ---------------------------------------------------------------------------- #
@@ -269,7 +269,6 @@ def PlotScatter(idx1_name, idx2_name, idx1_sd, idx2_sd, save=save,
     ax.text(-4.9, -4.9, f'{idx2_name}-/{idx1_name}-', dict(size=in_label_size))
     ax.text(-4.9, -.1, f'{idx1_name}-', dict(size=in_label_size))
     plt.tight_layout()
-    plt.show()
 
     if save:
         plt.savefig(f'{out_dir}{name_fig}.png', dpi=dpi, bbox_inches='tight')

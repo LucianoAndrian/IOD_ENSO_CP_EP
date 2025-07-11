@@ -58,9 +58,9 @@ def Combinations(idx, indices):
 def OpenSetCases(var, idx1, idx2, idx3, phase, dir):
     if var == 'prec':
         fix = 30
-    elif var == 'tref':
+    elif var == 'tref' or v == 'sst':
         fix = 1
-    else:
+    elif v:
         fix = 9.8
 
     var = var.lower()
@@ -203,9 +203,9 @@ scale_pp = np.array([-45, -30, -20, -10, -2.5, 0, 2.5, 10, 20, 30, 45])
 scale_t = [-1, -0.8, -0.4, -0.2, -0.1, 0, 0.1, 0.2, 0.4, 0.8, 1]
 aux_scale_hgt = [-100, -50, -30, -15, -5, 5, 15, 30, 50, 100]
 aux_scale_hgt200 = [-150, -100, -50, -25, -10, 10, 25, 50, 100, 150]
-variables = ['tref', 'prec', 'hgt750', 'hgt']
-aux_scales = [scale_t, scale_pp, aux_scale_hgt, aux_scale_hgt200]
-aux_cbar = [cbar, cbar_pp, cbar, cbar]
+variables = ['sst', 'tref', 'prec', 'hgt']
+aux_scales = [scale_t, scale_t, scale_pp, aux_scale_hgt200]
+aux_cbar = [cbar, cbar, cbar_pp, cbar]
 
 print('# CFSv2 Composite --------------------------------------------------- #')
 
@@ -223,7 +223,7 @@ for v, scale, cbar in zip(variables, aux_scales, aux_cbar):
         if v == 'tref' or v == 'prec':
             map = 'sa'
 
-            cases_hgt750 = OpenSetCases(var='hgt750',
+            cases_hgt750 = OpenSetCases(var='hgt',
                                         idx1='dmi', idx2='ep', idx3='cp',
                                         phase=f,
                                         dir=cases_fields)
@@ -231,18 +231,23 @@ for v, scale, cbar in zip(variables, aux_scales, aux_cbar):
             cases_ordenados_hgt, _ = MakeComposite(cases_hgt750)
             data_ctn = cases_ordenados_hgt
             levels_ctn = aux_scale_hgt
+            data_ctn_no_ocean_mask = True
+            ocean_mask = True
+            high = 3
         else:
             map = 'hs'
             data_ctn = cases_ordenados
             levels_ctn = scale
+            ocean_mask = False
+            high = 1.3
 
-
+        name_fig = f'comp_{v}_{f}'
         PlotFinal(data=cases_ordenados, levels=scale, cmap=cbar,
-                  titles=titles, namefig=f"f10", map=map,
+                  titles=titles, namefig=name_fig, map=map,
                   save=save, dpi=dpi, out_dir=out_dir,
-                  data_ctn=data_ctn, color_ctn='k', high=3,
+                  data_ctn=data_ctn, color_ctn='k', high=high,
                   num_cases=None, num_cases_data=None, num_cols=3,
-                  ocean_mask=True, pdf=False, levels_ctn=levels_ctn,
+                  ocean_mask=ocean_mask, pdf=False, levels_ctn=levels_ctn,
                   data_ctn_no_ocean_mask=True)
 
 print('# --------------------------------------------------------------------#')
