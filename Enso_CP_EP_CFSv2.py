@@ -204,17 +204,12 @@ def CheckEvent(sst, cp, ep, year, lead, r):
 # ---------------------------------------------------------------------------- #
 
 sst = xr.open_dataset('/pikachu/datos/luciano.andrian/cases_fields/sst_son.nc')
-sst_sel = sst.sel(lon=slice(110,290), lat=slice(-10,10))
 
+# Takahashi et al. 2011 ------------------------------------------------------ #
+sst_sel = sst.sel(lon=slice(110,290), lat=slice(-10,10))
 pc1_f_r, pc2_f_r, eof_f_r, _, _, _ = Compute(sst_sel, False)
 
-# plt.imshow(eof_f_r.sel(mode=0, L=0), vmin=-1, vmax=1, cmap='RdBu_r')
-# plt.show()
-# plt.imshow(eof_f_r.sel(mode=1, L=0), vmin=-1, vmax=1, cmap='RdBu_r')
-# plt.show()
-
 # En algunos leads el oef puede tener signo cambiado
-
 # Acomodo los signos de cada pc en funcion del EOF
 pc1_ch, pc2_ch = CheckSign(eof_f_r, pc1_f_r, pc2_f_r)
 
@@ -223,11 +218,31 @@ cp = cp.to_dataset(name='sst')
 ep = (pc1_ch - pc2_ch)/np.sqrt(2)
 ep = ep.to_dataset(name='sst')
 
+# Tedeschi et al. 2014 ------------------------------------------------------- #
+cp_td = sst.sel(lon=slice(160, 210), lat=slice(-5,5)).mean(['lon', 'lat'])
+ep_td = sst.sel(lon=slice(220, 270), lat=slice(-5,5)).mean(['lon', 'lat'])
+
+# Sulivan et al. 2016 -------------------------------------------------------- #
+n3 = sst.sel(lon=slice(210, 270), lat=slice(-5,5)).mean(['lon', 'lat'])
+n4 = sst.sel(lon=slice(200, 210), lat=slice(-5,5)).mean(['lon', 'lat'])
+
+n3 = (n3 - n3.mean('time'))/n3.std('time')
+n4 = (n4 - n4.mean('time'))/n4.std('time')
+
+ep_n = n3 - 0.5*n4
+cp_n = n4 - 0.5*n3
+
 # ---------------------------------------------------------------------------- #
 if save:
     print('Saving...')
     cp.to_netcdf(f'{out_dir}CP_SON_Leads_r_CFSv2.nc')
     ep.to_netcdf(f'{out_dir}EP_SON_Leads_r_CFSv2.nc')
+
+    cp_td.to_netcdf(f'{out_dir}/aux_ep_cp_t/CP_Td_SON_Leads_r_CFSv2.nc')
+    ep_td.to_netcdf(f'{out_dir}/aux_ep_cp_t/EP_Td_SON_Leads_r_CFSv2.nc')
+
+    cp_n.to_netcdf(f'{out_dir}/aux_ep_cp_n/CP_n_SON_Leads_r_CFSv2.nc')
+    ep_n.to_netcdf(f'{out_dir}/aux_ep_cp_n/EP_n_SON_Leads_r_CFSv2.nc')
 
 print('# --------------------------------------------------------------------#')
 print('# --------------------------------------------------------------------#')
