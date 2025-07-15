@@ -420,6 +420,93 @@ for r in range(1, 25):
 if save_nc is True:
     save_event_dict_to_netcdf(events, out_dir, season='SON', prefix='CFSv2')
 
+# ---------------------------------------------------------------------------- #
+# ---------------------------------------------------------------------------- #
+# Td
+dates_dir_ep_cp = f'{dates_dir}/aux_ep_cp_t/'
+dmi = xr.open_dataset(dates_dir + 'DMI_SON_Leads_r_CFSv2.nc')
+ep = xr.open_dataset(dates_dir_ep_cp + 'EP_Td_SON_Leads_r_CFSv2.nc')
+cp = xr.open_dataset(dates_dir_ep_cp + 'CP_Td_SON_Leads_r_CFSv2.nc')
+
+# Criterios:
+data_dmi = dmi.where(np.abs(dmi) > 0.5*dmi.mean('r').std())
+data_ep = ep.where(np.abs(ep) > 0.5*ep.mean('r').std())
+data_cp = cp.where(np.abs(cp) > 0.5*cp.mean('r').std())
+
+data_ep['sst'] = data_ep['sst'].T
+data_cp['sst'] = data_cp['sst'].T
+# ---------------------------------------------------------------------------- #
+indices = ['dmi', 'ep', 'cp']
+events = InitEvent_dict(indices)
+for r in range(1, 25):
+
+    events_r = ClassifyEventsPerMember(
+        r, indices, data_dmi, data_ep, data_cp, dmi)
+
+    events = merge_event_dicts(events, events_r)
+
+if save_nc is True:
+    out_dir = '/pikachu/datos/luciano.andrian/cases_dates_EP_CP/aux_ep_cp_t/'
+    save_event_dict_to_netcdf(events, out_dir, season='SON', prefix='CFSv2_Td')
+
+# ---------------------------------------------------------------------------- #
+# ---------------------------------------------------------------------------- #
+# n
+dates_dir_ep_cp = f'{dates_dir}/aux_ep_cp_n/'
+dmi = xr.open_dataset(dates_dir + 'DMI_SON_Leads_r_CFSv2.nc')
+ep = xr.open_dataset(dates_dir_ep_cp + 'EP_n_SON_Leads_r_CFSv2.nc')
+cp = xr.open_dataset(dates_dir_ep_cp + 'CP_n_SON_Leads_r_CFSv2.nc')
+
+# Criterios:
+data_dmi = dmi.where(np.abs(dmi) > 0.5*dmi.mean('r').std())
+data_ep = ep.where(np.abs(ep) > 0.5*ep.mean('r').std())
+data_cp = cp.where(np.abs(cp) > 0.5*cp.mean('r').std())
+
+data_ep['sst'] = data_ep['sst'].T
+data_cp['sst'] = data_cp['sst'].T
+# ---------------------------------------------------------------------------- #
+indices = ['dmi', 'ep', 'cp']
+events = InitEvent_dict(indices)
+for r in range(1, 25):
+
+    events_r = ClassifyEventsPerMember(
+        r, indices, data_dmi, data_ep, data_cp, dmi)
+
+    events = merge_event_dicts(events, events_r)
+
+if save_nc is True:
+    out_dir = '/pikachu/datos/luciano.andrian/cases_dates_EP_CP/aux_ep_cp_n/'
+    save_event_dict_to_netcdf(events, out_dir, season='SON', prefix='CFSv2_n')
+
+
+# aux_todo_indices
+dmi = xr.open_dataset(dates_dir + 'DMI_SON_Leads_r_CFSv2.nc')
+ep = xr.open_dataset(dates_dir + 'EP_SON_Leads_r_CFSv2.nc')
+cp = xr.open_dataset(dates_dir + 'CP_SON_Leads_r_CFSv2.nc')
+
+# Criterios:
+data_dmi = dmi.where(np.abs(dmi) > 0.5*dmi.mean('r').std())
+data_ep = ep.where(np.abs(ep) > 0.5*ep.mean('r').std())
+data_cp = cp.where(np.abs(cp) > 0.5*cp.mean('r').std())
+
+data_ep['sst'] = data_ep['sst'].T
+data_cp['sst'] = data_cp['sst'].T
+# ---------------------------------------------------------------------------- #
+indices = ['dmi', 'ep', 'cp']
+events = InitEvent_dict(indices)
+for r in range(1, 25):
+
+    events_r = ClassifyEventsPerMember(
+        r, indices, data_dmi, data_ep, data_cp, dmi)
+
+    events = merge_event_dicts(events, events_r)
+
+if save_nc is True:
+    save_event_dict_to_netcdf(events, out_dir, season='SON', prefix='CFSv2')
+
+
+
+
 print('# --------------------------------------------------------------------#')
 print('# --------------------------------------------------------------------#')
 print('done')
