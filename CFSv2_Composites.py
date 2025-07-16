@@ -58,9 +58,9 @@ def Combinations(idx, indices):
 def OpenSetCases(var, idx1, idx2, idx3, phase, dir):
     if var == 'prec':
         fix = 30
-    elif var == 'tref' or v == 'sst':
+    elif var == 'tref' or var == 'sst':
         fix = 1
-    elif v:
+    elif var:
         fix = 9.8
 
     var = var.lower()
