@@ -4,6 +4,9 @@ Takahayi et al. 2011
 Tedeschi et alo. 2014
 Sulivan et al. 2016
 """
+# ---------------------------------------------------------------------------- #
+plots = False
+# ---------------------------------------------------------------------------- #
 import statsmodels.formula.api as smf
 import pandas as pd
 from eofs.xarray import Eof
@@ -208,52 +211,55 @@ eof = solver.eofsAsCovariance(neofs=2)
 pcs = solver.pcs(pcscaling=1)
 var_per = np.around(solver.varianceFraction(neigs=3).values * 100,1)
 
-PlotOne(eof[0])
-PlotOne(eof[1])
+if plots:
+    PlotOne(eof[0])
+    PlotOne(eof[1])
 
 pc1 = -pcs.sel(mode=0)
 pc2 = -pcs.sel(mode=1)
-print(f'var exp {var_per[0]}%')
 
-PlotTimeSeries(serie1=n34_son, serie2=pc1, serie3=pc2,
-               label1='ONI', label2='pc1', label3='pc2', title='')
+if plots:
+    print(f'var exp {var_per[0]}%')
+    PlotTimeSeries(serie1=n34_son, serie2=pc1, serie3=pc2,
+                   label1='ONI', label2='pc1', label3='pc2', title='')
 
 cp_tk = (pc1 + pc2)/np.sqrt(2)
 ep_tk = (pc1 - pc2)/np.sqrt(2)
 
-pc1_reg_tk = RegreField(sst, pc1, return_coef=True)
-pc2_reg_tk = RegreField(sst, pc2, return_coef=True)
-cp_reg_tk = RegreField(sst, cp_tk, return_coef=True)
-ep_reg_tk = RegreField(sst, ep_tk, return_coef=True)
+if plots:
+    pc1_reg_tk = RegreField(sst, pc1, return_coef=True)
+    pc2_reg_tk = RegreField(sst, pc2, return_coef=True)
+    cp_reg_tk = RegreField(sst, cp_tk, return_coef=True)
+    ep_reg_tk = RegreField(sst, ep_tk, return_coef=True)
 
-levels = [-0.9, -0.7, -0.5, -0.3, -0.1, 0, 0.1, 0.3, 0.5, 0.7, 0.9]
+    levels = [-0.9, -0.7, -0.5, -0.3, -0.1, 0, 0.1, 0.3, 0.5, 0.7, 0.9]
 
-# PlotOne(pc1_reg_tk, levels=levels)
-# PlotOne(pc2_reg_tk, levels=levels)
-PlotOne(cp_reg_tk, levels=levels,
-        title='Regression Coef. CP ENSO - Takahashi et al. 2011')
-PlotOne(ep_reg_tk, levels=levels,
-        title='Regression Coef. EP ENSO - Takahashi et al. 2011')
+    # PlotOne(pc1_reg_tk, levels=levels)
+    # PlotOne(pc2_reg_tk, levels=levels)
+    PlotOne(cp_reg_tk, levels=levels,
+            title='Regression Coef. CP ENSO - Takahashi et al. 2011')
+    PlotOne(ep_reg_tk, levels=levels,
+            title='Regression Coef. EP ENSO - Takahashi et al. 2011')
 
-PlotTimeSeries(serie1=n34_son, serie2=cp_tk, serie3=ep_tk,
-               label1='ONI', label2='CP', label3='EP',
-               title='Takahashi et al. 2011')
+    PlotTimeSeries(serie1=n34_son, serie2=cp_tk, serie3=ep_tk,
+                   label1='ONI', label2='CP', label3='EP',
+                   title='Takahashi et al. 2011')
 
 # Tedeschi et al. 2014 ------------------------------------------------------- #
 cp_td = sst.sel(lon=slice(160, 210), lat=slice(5,-5)).mean(['lon', 'lat'])['var']
 ep_td = sst.sel(lon=slice(220, 270), lat=slice(5,-5)).mean(['lon', 'lat'])['var']
 
-PlotTimeSeries(serie1=n34_son, serie2=cp_td, serie3=ep_td,
-               label1='ONI', label2='CP', label3='EP',
-               title='Tedeschi et al. 2014')
+if plots:
+    PlotTimeSeries(serie1=n34_son, serie2=cp_td, serie3=ep_td,
+                   label1='ONI', label2='CP', label3='EP',
+                   title='Tedeschi et al. 2014')
 
-cp_reg_td = RegreField(sst, cp_td, return_coef=True)
-ep_reg_td = RegreField(sst, ep_td, return_coef=True)
-PlotOne(cp_reg_td, levels=levels,
-        title='Regression Coef. CP ENSO - Tedeschi et al. 2014')
-PlotOne(ep_reg_td, levels=levels,
-        title='Regression Coef. EP ENSO - Tedeschi et al. 2014')
-
+    cp_reg_td = RegreField(sst, cp_td, return_coef=True)
+    ep_reg_td = RegreField(sst, ep_td, return_coef=True)
+    PlotOne(cp_reg_td, levels=levels,
+            title='Regression Coef. CP ENSO - Tedeschi et al. 2014')
+    PlotOne(ep_reg_td, levels=levels,
+            title='Regression Coef. EP ENSO - Tedeschi et al. 2014')
 
 # Sulivan et al. 2016 -------------------------------------------------------- #
 n3 = sst.sel(lon=slice(210, 270), lat=slice(5,-5)).mean(['lon', 'lat'])['var']
@@ -267,15 +273,17 @@ n4 = (n4 - n4.mean('time'))/n4.std('time')
 ep_n = n3 - 0.5*n4
 cp_n = n4 - 0.5*n3
 
-PlotTimeSeries(serie1=n34_son, serie2=cp_n, serie3=ep_n,
-               label1='ONI', label2='CP', label3='EP',
-               title='Sulivan et al. 2016')
+if plots:
+    PlotTimeSeries(serie1=n34_son, serie2=cp_n, serie3=ep_n,
+                   label1='ONI', label2='CP', label3='EP',
+                   title='Sulivan et al. 2016')
 
-cp_reg_n = RegreField(sst, cp_n, return_coef=True)
-ep_reg_n = RegreField(sst, ep_n, return_coef=True)
-PlotOne(cp_reg_n, levels=levels,
-        title='Regression Coef. CP ENSO - Sulivan et al. 2016')
-PlotOne(ep_reg_n, levels=levels,
-        title='Regression Coef. EP ENSO - Sulivan et al. 2016')
+    cp_reg_n = RegreField(sst, cp_n, return_coef=True)
+    ep_reg_n = RegreField(sst, ep_n, return_coef=True)
+    PlotOne(cp_reg_n, levels=levels,
+            title='Regression Coef. CP ENSO - Sulivan et al. 2016')
+    PlotOne(ep_reg_n, levels=levels,
+            title='Regression Coef. EP ENSO - Sulivan et al. 2016')
+
 # ---------------------------------------------------------------------------- #
 # ---------------------------------------------------------------------------- #
