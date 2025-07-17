@@ -152,23 +152,28 @@ def MakeComposite(cases):
                 if len(subkeys) > 1:
                     for sk in subkeys:
                         pos = Decider(i, key, indices, sk)
-                        comp = key_case[sk].mean('time') - neutro
+                        aux_comp = key_case[sk].mean('time')
+                        len_comp = len(key_case[sk].time)
+                        comp = aux_comp - neutro
                         cases_ordenados[pos] = comp
-                        titles[pos] = f'{i.upper()} - {sk.upper()}'
+                        titles[pos] = f'{i.upper()} - {sk.upper()} - N:{len_comp}'
 
                 else:
                     pos = Decider(i, key, indices)
-                    comp = key_case.mean('time') - neutro
+                    aux_comp = key_case.mean('time')
+                    len_comp = len(key_case.time)
+                    comp = aux_comp - neutro
                     cases_ordenados[pos] = comp
-                    titles[pos] = f'{i.upper()} {key}'
-
+                    titles[pos] = f'{i.upper()} {key} - N:{len_comp}'
 
         else:
             key = i_case_k[0]
             pos = Decider(i, key, indices)
-            comp = i_case[key].mean('time') - neutro
+            aux_comp = i_case[key].mean('time')
+            len_comp = len(i_case[key].time)
+            comp = aux_comp - neutro
             cases_ordenados[pos] = comp
-            titles[pos] = f'{i.upper()} - {key}'
+            titles[pos] = f'{i.upper()} - {key} - N:{len_comp}'
 
     cases_ordenados = xr.concat(cases_ordenados, dim='plots')
     var_name = list(cases_ordenados.data_vars)[0]
