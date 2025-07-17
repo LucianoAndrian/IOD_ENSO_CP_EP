@@ -364,62 +364,32 @@ def save_event_dict_to_netcdf(event_dict, out_dir, season='', prefix=''):
 
     recursive_save(event_dict, [])
 
-## Funciones ----------------------------------------------------------------- #
-from test_indices import cp_tk, ep_tk, year_start, year_end
-dmi = DMI(filter_bwa=False, start_per='1920', end_per='2020')[2]
-dmi = dmi.sel(time=slice(f'{year_start}-01-01', f'{year_end}-12-31'))
-dmi_or = dmi.sel(time=dmi.time.dt.month.isin(10))
+def Compute(trh_sd, save_nc=False):
+    from test_indices import cp_tk, ep_tk, year_start, year_end
+    dmi = DMI(filter_bwa=False, start_per='1920', end_per='2020')[2]
+    dmi = dmi.sel(time=slice(f'{year_start}-01-01', f'{year_end}-12-31'))
+    dmi_or = dmi.sel(time=dmi.time.dt.month.isin(10))
+
+    # ---------------------------------------------------------------------------- #
+    # Criterio simple
+    data_dmi = dmi_or.where(np.abs(dmi_or) > trh_sd * dmi_or.std())
+    data_ep = ep_tk.where(np.abs(ep_tk) > trh_sd * ep_tk.std())
+    data_cp = cp_tk.where(np.abs(cp_tk) > trh_sd * cp_tk.std())
+
+    data_dmi = data_dmi.to_dataset(name='sst')
+    data_ep = data_ep.to_dataset(name='sst')
+    data_cp = data_cp.to_dataset(name='sst')
+    dmi_ds = dmi_or.to_dataset(name='sst')
+
+    indices = ['dmi', 'ep', 'cp']
+    events = ClassifyEvents(indices, data_dmi, data_ep, data_cp, dmi_ds)
+
+    len_neutros = len(events['neutros'].time)
+    print(f'Neutros: {len_neutros}')
+    if save_nc:
+        save_event_dict_to_netcdf(events, out_dir, prefix='OBS')
+    else:
+        return events
 
 # ---------------------------------------------------------------------------- #
-# Criterio simple
-trh = 1
-data_dmi = dmi_or.where(np.abs(dmi_or) > trh*dmi_or.std())
-data_ep = ep_tk.where(np.abs(ep_tk) > trh*ep_tk.std())
-data_cp = cp_tk.where(np.abs(cp_tk) > trh*cp_tk.std())
-
-data_dmi = data_dmi.to_dataset(name='sst')
-data_ep = data_ep.to_dataset(name='sst')
-data_cp = data_cp.to_dataset(name='sst')
-dmi_ds = dmi_or.to_dataset(name='sst')
-
-indices = ['dmi', 'ep', 'cp']
-events = ClassifyEvents(indices, data_dmi, data_ep, data_cp, dmi_ds)
-
-if save_nc:
-    save_event_dict_to_netcdf(events, out_dir, prefix='OBS')
 # ---------------------------------------------------------------------------- #
-# ---------------------------------------------------------------------------- #
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
