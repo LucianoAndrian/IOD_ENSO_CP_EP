@@ -366,6 +366,10 @@ def save_event_dict_to_netcdf(event_dict, out_dir, season='', prefix=''):
 
 def Compute(trh_sd, save_nc=False):
     from test_indices import cp_tk, ep_tk, year_start, year_end
+    out_dir = '/pikachu/datos/luciano.andrian/cases_dates_EP_CP_OBS/'
+    for f in os.listdir(out_dir):
+        os.remove(os.path.join(out_dir, f))
+
     dmi = DMI(filter_bwa=False, start_per='1920', end_per='2020')[2]
     dmi = dmi.sel(time=slice(f'{year_start}-01-01', f'{year_end}-12-31'))
     dmi_or = dmi.sel(time=dmi.time.dt.month.isin(10))

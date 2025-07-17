@@ -32,51 +32,52 @@ from SelectEvents_obs import Compute
 
 # Funciones ------------------------------------------------------------------ #
 def OpenSetCases(idx1, idx2, idx3, phase, dir):
+    import xarray as xr
+
+    def open_and_load(path):
+        ds = xr.open_dataset(path, engine='netcdf4')  # backend explícito
+        ds_loaded = ds.load()  # carga a memoria
+        ds.close()             # cierra archivo en disco
+        return ds_loaded       # retorna solo versión en RAM
+
     idx1 = idx1.lower()
     idx2 = idx2.lower()
     idx3 = idx3.lower()
 
     cases = {}
-    cases['neutros'] = xr.open_dataset(f'{dir}OBS_neutros.nc')
+    cases['neutros'] = open_and_load(f'{dir}OBS_neutros.nc')
 
     indices = [idx1, idx2, idx3]
 
     for i_num, i in enumerate(indices):
 
         idx, idx_aux2, idx_aux3 = Combinations(i, indices)
-
         cases[i] = {}
 
         # puro
-        cases[i]['puros'] = xr.open_dataset(
-            f'{dir}OBS_puros_{i}_{phase}.nc')
-
-        # doble
         try:
-            doble_2 = xr.open_dataset(
-                f'{dir}OBS_simultaneos_dobles_{i}_{idx_aux2}_{phase}'
-                f'.nc')
+            cases[i]['puros'] = open_and_load(f'{dir}OBS_puros_{i}_{phase}.nc')
+        except FileNotFoundError:
+            pass
 
-            doble_3 = xr.open_dataset(
-                f'{dir}OBS_simultaneos_dobles_{i}_{idx_aux3}_{phase}'
-                f'.nc')
+        # dobles
+        try:
+            doble_2 = open_and_load(f'{dir}OBS_simultaneos_dobles_{i}_{idx_aux2}_{phase}.nc')
+            doble_3 = open_and_load(f'{dir}OBS_simultaneos_dobles_{i}_{idx_aux3}_{phase}.nc')
 
-            cases[i]['dobles'] = {}
-            cases[i]['dobles'][idx_aux2] = doble_2
-            cases[i]['dobles'][idx_aux3] = doble_3
-        except:
+            cases[i]['dobles'] = {
+                idx_aux2: doble_2,
+                idx_aux3: doble_3
+            }
+        except FileNotFoundError:
             pass
 
         # triple
         try:
-            # hay uno solo
-            triple = xr.open_dataset(
-                f'{dir}OBS_simultaneos_triples_{i}_{idx_aux2}_{idx_aux3}'
-                f'_{phase}.nc')
-
-            cases[i]['triples'] = {}
+            triple = open_and_load(
+                f'{dir}OBS_simultaneos_triples_{i}_{idx_aux2}_{idx_aux3}_{phase}.nc')
             cases[i]['triples'] = triple
-        except:
+        except FileNotFoundError:
             pass
 
     return cases
@@ -275,7 +276,7 @@ variables = [None, 'tcru_w_c_d_0.25_SON', 'ppgpcc_w_c_d_1_SON',
 
 for sd in thr_sd:
     # ------------------------------------------------------------------------ #
-    Compute(sd)
+    Compute(sd, save_nc=True)
     # ------------------------------------------------------------------------ #
     for v, dir, scale, cbar in zip(variables, dirs, aux_scales, aux_cbar):
 
@@ -328,5 +329,6 @@ for sd in thr_sd:
                       ocean_mask=ocean_mask, pdf=False, levels_ctn=levels_ctn,
                       data_ctn_no_ocean_mask=True)
 
+    del cases
     # ------------------------------------------------------------------------ #
     # ------------------------------------------------------------------------ #
