@@ -286,7 +286,7 @@ sd_cp_s = xr.open_dataset(index_dir + 'CP_SON_Leads_r_CFSv2.nc').std()
 PlotScatter(idx1_name='DMI', idx2_name='EP',
             idx1_sd=sd_dmi_s, idx2_sd= sd_ep_s, save=save,
             name_fig='Scatter_DMI-EP',
-            cases_dir=cases_dir, index_dir=index_dir, plot_mod_all=True)
+            cases_dir=cases_dir, index_dir=index_dir)
 
 PlotScatter(idx1_name='DMI', idx2_name='CP',
             idx1_sd=sd_dmi_s, idx2_sd= sd_cp_s, save=save,
@@ -298,6 +298,21 @@ PlotScatter(idx1_name='EP', idx2_name='CP',
             name_fig='Scatter_EP-CP',
             cases_dir=cases_dir, index_dir=index_dir)
 
+PlotScatter(idx1_name='DMI', idx2_name='EP',
+            idx1_sd=sd_dmi_s, idx2_sd= sd_ep_s, save=save,
+            name_fig='Scatter_DMI-EP_todo',
+            cases_dir=cases_dir, index_dir=index_dir, plot_mod_all=True)
+
+PlotScatter(idx1_name='DMI', idx2_name='CP',
+            idx1_sd=sd_dmi_s, idx2_sd= sd_cp_s, save=save,
+            name_fig='Scatter_DMI-CP_todo',
+            cases_dir=cases_dir, index_dir=index_dir, plot_mod_all=True)
+
+PlotScatter(idx1_name='EP', idx2_name='CP',
+            idx1_sd=sd_ep_s, idx2_sd= sd_cp_s, save=save,
+            name_fig='Scatter_EP-CP_todo',
+            cases_dir=cases_dir, index_dir=index_dir, plot_mod_all=True)
+
 # ---------------------------------------------------------------------------- #
 cases_dir = '/pikachu/datos/luciano.andrian/cases_fields_EP_CP/aux_ep_cp_t/'
 index_dir = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/aux_ep_cp_t/'
@@ -305,21 +320,35 @@ index_dir = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/aux_ep_cp_t/'
 sd_ep_s = xr.open_dataset(index_dir + 'EP_Td_SON_Leads_r_CFSv2.nc').std()
 sd_cp_s = xr.open_dataset(index_dir + 'CP_Td_SON_Leads_r_CFSv2.nc').std()
 
-PlotScatter(idx1_name='DMI', idx2_name='EP_Td',
+PlotScatter(idx1_name='DMI', idx2_name='EP',
             idx1_sd=sd_dmi_s, idx2_sd= sd_ep_s, save=save,
             name_fig='Scatter_DMI-EP_Td',
-            cases_dir=cases_dir, index_dir=index_dir, plot_mod_all=True)
+            cases_dir=cases_dir, index_dir=index_dir)
 
-PlotScatter(idx1_name='DMI', idx2_name='CP_Td',
+PlotScatter(idx1_name='DMI', idx2_name='CP',
             idx1_sd=sd_dmi_s, idx2_sd= sd_cp_s, save=save,
             name_fig='Scatter_DMI-CP_Td',
             cases_dir=cases_dir, index_dir=index_dir)
 
-PlotScatter(idx1_name='EP_Td', idx2_name='CP_Td',
+PlotScatter(idx1_name='EP', idx2_name='CP',
             idx1_sd=sd_ep_s, idx2_sd= sd_cp_s, save=save,
             name_fig='Scatter_EP_Td-CP_Td',
             cases_dir=cases_dir, index_dir=index_dir)
 
+PlotScatter(idx1_name='DMI', idx2_name='EP',
+            idx1_sd=sd_dmi_s, idx2_sd= sd_ep_s, save=save,
+            name_fig='Scatter_DMI-EP_Td_todo',
+            cases_dir=cases_dir, index_dir=index_dir, plot_mod_all=True)
+
+PlotScatter(idx1_name='DMI', idx2_name='CP',
+            idx1_sd=sd_dmi_s, idx2_sd= sd_cp_s, save=save,
+            name_fig='Scatter_DMI-CP_Td_todo',
+            cases_dir=cases_dir, index_dir=index_dir, plot_mod_all=True)
+
+PlotScatter(idx1_name='EP', idx2_name='CP',
+            idx1_sd=sd_ep_s, idx2_sd= sd_cp_s, save=save,
+            name_fig='Scatter_EP-CP_Td_todo',
+            cases_dir=cases_dir, index_dir=index_dir, plot_mod_all=True)
 # ---------------------------------------------------------------------------- #
 cases_dir = '/pikachu/datos/luciano.andrian/cases_fields_EP_CP/aux_ep_cp_n/'
 index_dir = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/aux_ep_cp_n/'
@@ -327,20 +356,35 @@ index_dir = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/aux_ep_cp_n/'
 sd_ep_s = xr.open_dataset(index_dir + 'EP_n_SON_Leads_r_CFSv2.nc').std()
 sd_cp_s = xr.open_dataset(index_dir + 'CP_n_SON_Leads_r_CFSv2.nc').std()
 
-PlotScatter(idx1_name='DMI', idx2_name='EP_n',
+PlotScatter(idx1_name='DMI', idx2_name='EP',
             idx1_sd=sd_dmi_s, idx2_sd= sd_ep_s, save=save,
-            name_fig='Scatter_DMI-EP',
+            name_fig='Scatter_DMI-EP_n',
             cases_dir=cases_dir, index_dir=index_dir)
 
-PlotScatter(idx1_name='DMI', idx2_name='CP_n',
+PlotScatter(idx1_name='DMI', idx2_name='CP',
             idx1_sd=sd_dmi_s, idx2_sd= sd_cp_s, save=save,
-            name_fig='Scatter_DMI-CP',
+            name_fig='Scatter_DMI-CP_n',
             cases_dir=cases_dir, index_dir=index_dir)
 
-PlotScatter(idx1_name='EP', idx2_name='CP_n',
+PlotScatter(idx1_name='EP', idx2_name='CP',
             idx1_sd=sd_ep_s, idx2_sd= sd_cp_s, save=save,
-            name_fig='Scatter_EP-CP',
+            name_fig='Scatter_EP-CP_n',
             cases_dir=cases_dir, index_dir=index_dir)
+
+PlotScatter(idx1_name='DMI', idx2_name='EP',
+            idx1_sd=sd_dmi_s, idx2_sd= sd_ep_s, save=save,
+            name_fig='Scatter_DMI-EP_n_todo',
+            cases_dir=cases_dir, index_dir=index_dir, plot_mod_all=True)
+
+PlotScatter(idx1_name='DMI', idx2_name='CP',
+            idx1_sd=sd_dmi_s, idx2_sd= sd_cp_s, save=save,
+            name_fig='Scatter_DMI-CP_n_todo',
+            cases_dir=cases_dir, index_dir=index_dir, plot_mod_all=True)
+
+PlotScatter(idx1_name='EP', idx2_name='CP',
+            idx1_sd=sd_ep_s, idx2_sd= sd_cp_s, save=save,
+            name_fig='Scatter_EP-CP_n_todo',
+            cases_dir=cases_dir, index_dir=index_dir, plot_mod_all=True)
 
 print('# --------------------------------------------------------------------#')
 print('# --------------------------------------------------------------------#')
