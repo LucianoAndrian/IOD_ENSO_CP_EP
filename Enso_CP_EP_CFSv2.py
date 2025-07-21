@@ -4,12 +4,21 @@ Calculo de los indices EP y CP en CFSv2
 # ---------------------------------------------------------------------------- #
 out_dir = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/'
 save = True
+all_eof = True
 
 # ---------------------------------------------------------------------------- #
 import numpy as np
 import xarray as xr
 from eofs.xarray import Eof
 import matplotlib.pyplot as plt
+from matplotlib import colors
+import warnings
+warnings.filterwarnings( "ignore", module = "matplotlib\..*" )
+from shapely.errors import ShapelyDeprecationWarning
+warnings.filterwarnings("ignore", category=ShapelyDeprecationWarning)
+warnings.filterwarnings("ignore")
+import cartopy.crs as ccrs
+import cartopy.feature as cfeature
 
 # ---------------------------------------------------------------------------- #
 def Compute(data, modeL):
@@ -52,6 +61,9 @@ def Compute(data, modeL):
         pc1_f_r = pcs[:,0]
         pc2_f_r = pcs[:,1]
         eof_f_r = eof_L_r
+
+        pc1_f_r = pc1_f_r.unstack('time').rename( {'time2':'time'})
+        pc2_f_r = pc2_f_r.unstack('time').rename( {'time2':'time'})
 
         pc1_f_em = None
         pc2_f_em = None
@@ -152,8 +164,11 @@ def Compute(data, modeL):
 
             print('Done concat')
 
-    pc1_f_r = pc1_f_r.rename({'time2':'time'})
-    pc2_f_r = pc2_f_r.rename({'time2':'time'})
+    try:
+        pc1_f_r = pc1_f_r.rename({'time2':'time'})
+        pc2_f_r = pc2_f_r.rename({'time2':'time'})
+    except:
+        pass
 
     return pc1_f_r, pc2_f_r, eof_f_r, pc1_f_em, pc2_f_em, eof_f_em
 
@@ -161,32 +176,45 @@ def CheckSign(eof, pc1, pc2):
 
     pc1_f = []
     pc2_f = []
-    for l in eof.L.values:
-        # try:
-        #     print('test0')
-        sign_pc1 = np.sign(eof.sel(mode=0, L=l, lon=slice(210, 250)).mean())
-        sign_pc2 = np.sign(eof.sel(mode=1, L=l, lon=slice(150, 180)).mean())
-        # except:
-        #     print('test1')
-        #     sign_pc1 = np.sign(eof.sel(mode=0, lon=slice(210, 250))[l,:,:].mean())
-        #     sign_pc2 = np.sign(eof.sel(mode=1, lon=slice(150, 180))[l,:,:].mean())
+
+    if 'L' in eof.dims:
+
+        for l in eof.L.values:
+            # try:
+            #     print('test0')
+            sign_pc1 = np.sign(eof.sel(mode=0, L=l, lon=slice(210, 250)).mean())
+            sign_pc2 = np.sign(eof.sel(mode=1, L=l, lon=slice(150, 180)).mean())
+            # except:
+            #     print('test1')
+            #     sign_pc1 = np.sign(eof.sel(mode=0, lon=slice(210, 250))[l,:,:].mean())
+            #     sign_pc2 = np.sign(eof.sel(mode=1, lon=slice(150, 180))[l,:,:].mean())
+
+            if sign_pc1 < 0:
+                pc1_L = pc1.sel(time=pc1.time.dt.month.isin(10 - l)) * sign_pc1
+            else:
+                pc1_L = pc1.sel(time=pc1.time.dt.month.isin(10 - l))
+
+            if sign_pc2 < 0:
+                pc2_L = pc2.sel(time=pc2.time.dt.month.isin(10 - l)) * sign_pc2
+            else:
+                pc2_L = pc2.sel(time=pc2.time.dt.month.isin(10 - l))
+
+            pc1_f.append(pc1_L)
+            pc2_f.append(pc2_L)
+
+        pc1_f = xr.concat(pc1_f, 'time')
+        pc2_f = xr.concat(pc2_f, 'time')
+
+    else:
+        sign_pc1 = np.sign(eof.sel(mode=0, lon=slice(210, 250)).mean())
+        sign_pc2 = np.sign(eof.sel(mode=1, lon=slice(150, 180)).mean())
 
         if sign_pc1 < 0:
-            pc1_L = pc1.sel(time=pc1.time.dt.month.isin(10 - l))*sign_pc1
-        else:
-            pc1_L = pc1.sel(time=pc1.time.dt.month.isin(10 - l))
-
+            pc1 = pc1 * sign_pc1
         if sign_pc2 < 0:
-            pc2_L = pc2.sel(time=pc2.time.dt.month.isin(10 - l))*sign_pc2
-        else:
-            pc2_L = pc2.sel(time=pc2.time.dt.month.isin(10 - l))
-
-
-        pc1_f.append(pc1_L)
-        pc2_f.append(pc2_L)
-
-    pc1_f = xr.concat(pc1_f, 'time')
-    pc2_f = xr.concat(pc2_f, 'time')
+            pc2 = pc2 * sign_pc2
+        pc1_f = pc1
+        pc2_f = pc2
 
     return pc1_f, pc2_f
 
@@ -201,6 +229,57 @@ def CheckEvent(sst, cp, ep, year, lead, r):
     plt.imshow(sst.sel(r=r, time=f'{year}-{month}-01')['sst'][0, :, :])
     plt.title(f'CP:{cp_val}, EP:{ep_val}')
     plt.show()
+
+def PlotOne(field, levels = np.arange(-1,1.1,0.1), dpi=100, sa=False,
+            extend=None, title=''):
+
+    cbar = [
+        # deep → pale blue              |  WHITE  |  pale → deep red
+        '#014A9B', '#155AA8', '#276BB4', '#397AC1', '#4E8CCE',
+        '#649FDA', '#7BB2E7', '#97C7F3', '#B7DDFF',
+        '#FFFFFF',  # −0.1 ↔ 0.0
+        '#FFFFFF',  # 0.0 ↔ 0.1
+        '#FFD1CF', '#F7A8A5', '#EF827E', '#E5655D',
+        '#D85447', '#CB4635', '#BE3D23', '#AE2E11', '#9B1C00'
+    ]
+    cbar = colors.ListedColormap(cbar, name="blue_white_red_20")
+    cbar.set_over('#641B00')
+    cbar.set_under('#012A52')
+    cbar.set_bad(color='white')
+
+    if sa is True:
+        if extend is None:
+            extend = [275, 330, -60, 20]
+        fig_size = (4, 6)
+        cbar = 'BrBG'
+    else:
+        fig_size = (8, 4)
+        if extend is None:
+            extend = [0, 359, -40, 40]
+
+    fig = plt.figure(figsize=fig_size, dpi=dpi)
+    ax = plt.axes(projection=ccrs.PlateCarree(central_longitude=180))
+    crs_latlon = ccrs.PlateCarree()
+    ax.set_extent(extend, crs=crs_latlon)
+
+    try:
+        field_to_plot = field['var']
+    except:
+        field_to_plot = field
+
+    im = ax.contourf(field.lon, field.lat, field_to_plot,
+                 levels=levels, transform=crs_latlon, cmap=cbar,
+                     extend='both')
+
+    cb = plt.colorbar(im, fraction=0.042, pad=0.035, shrink=0.8)
+    cb.ax.tick_params(labelsize=8)
+    ax.coastlines()
+    ax.add_feature(cfeature.BORDERS, linewidth=0.5)
+    ax.set_title(title)
+    plt.tight_layout()
+
+    plt.show()
+
 # ---------------------------------------------------------------------------- #
 
 sst = xr.open_dataset('/pikachu/datos/luciano.andrian/cases_fields/sst_son.nc')
@@ -208,10 +287,15 @@ sst = xr.open_dataset('/pikachu/datos/luciano.andrian/cases_fields/sst_son.nc')
 # Takahashi et al. 2011 ------------------------------------------------------ #
 sst_sel = sst.sel(lon=slice(110,290), lat=slice(-10,10))
 pc1_f_r, pc2_f_r, eof_f_r, _, _, _ = Compute(sst_sel, False)
-
+PlotOne(eof_f_r.sel(mode=0, L=1))
 # En algunos leads el oef puede tener signo cambiado
 # Acomodo los signos de cada pc en funcion del EOF
 pc1_ch, pc2_ch = CheckSign(eof_f_r, pc1_f_r, pc2_f_r)
+
+if all_eof:
+    pc1_f, pc2_f, eof_f, _, _, _ = Compute(sst_sel, True)
+    PlotOne(eof_f.sel(mode=0))
+    pc1_ch, pc2_ch = CheckSign(eof_f, pc1_f, pc2_f)
 
 cp = (pc1_ch + pc2_ch)/np.sqrt(2)
 cp = cp.to_dataset(name='sst')

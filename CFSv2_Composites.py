@@ -2,7 +2,7 @@
 Composites
 """
 # ---------------------------------------------------------------------------- #
-save = True
+save = False
 out_dir = '/home/luciano.andrian/doc/IOD_ENSO_CP_EP/salidas/'
 cases_fields = '/pikachu/datos/luciano.andrian/cases_fields_EP_CP/'
 # ---------------------------------------------------------------------------- #
