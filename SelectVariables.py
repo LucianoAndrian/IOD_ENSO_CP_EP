@@ -93,64 +93,64 @@ data_dir = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/'
 div = len(files) // 2
 Run(files, var_file, div, data_dir=data_dir)
 
-# # ---------------------------------------------------------------------------- #
-# out_dir = '/pikachu/datos/luciano.andrian/cases_fields_EP_CP/aux_ep_cp_t/'
-# # EP Td ---------------------------------------------------------------------- #
-# var_file = 'EP_Td_SON_Leads_r_CFSv2.nc'
-# data_dir = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/aux_ep_cp_t/'
-# cases_date_dir = '/pikachu/datos/luciano.andrian/cases_dates_EP_CP/aux_ep_cp_t/'
-# files = os.listdir(cases_date_dir)
-# div = len(files) // 2
-#
-# Run(files, var_file, div, data_dir=data_dir, cases_dir=cases_date_dir,
-#     out_dir=out_dir, replace_name='CFSv2_Td_')
-#
-# # CP Td ----------------------------------------------------------------------- #
-# var_file = 'CP_Td_SON_Leads_r_CFSv2.nc'
-# data_dir = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/aux_ep_cp_t/'
-# cases_date_dir = '/pikachu/datos/luciano.andrian/cases_dates_EP_CP/aux_ep_cp_t/'
-# files = os.listdir(cases_date_dir)
-# div = len(files) // 2
-#
-# Run(files, var_file, div, data_dir=data_dir, cases_dir=cases_date_dir,
-#     out_dir=out_dir, replace_name='CFSv2_Td_')
-#
-# # DMI con Td ----------------------------------------------------------------- #
-# var_file = 'DMI_SON_Leads_r_CFSv2.nc'
-# data_dir = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/'
-# div = len(files) // 2
-# Run(files, var_file, div, data_dir=data_dir, cases_dir=cases_date_dir,
-#     out_dir=out_dir, replace_name='CFSv2_Td_')
-#
-# # ---------------------------------------------------------------------------- #
-# # ---------------------------------------------------------------------------- #
-# out_dir = '/pikachu/datos/luciano.andrian/cases_fields_EP_CP/aux_ep_cp_n/'
-# # EP n ----------------------------------------------------------------------- #
-# var_file = 'EP_n_SON_Leads_r_CFSv2.nc'
-# data_dir = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/aux_ep_cp_n/'
-# cases_date_dir = '/pikachu/datos/luciano.andrian/cases_dates_EP_CP/aux_ep_cp_n/'
-# files = os.listdir(cases_date_dir)
-# div = len(files) // 2
-#
-# Run(files, var_file, div, data_dir=data_dir, cases_dir=cases_date_dir,
-#     out_dir=out_dir, replace_name='CFSv2_n_')
-#
-# # CP ------------------------------------------------------------------------- #
-# var_file = 'CP_n_SON_Leads_r_CFSv2.nc'
-# data_dir = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/aux_ep_cp_n/'
-# cases_date_dir = '/pikachu/datos/luciano.andrian/cases_dates_EP_CP/aux_ep_cp_n/'
-# files = os.listdir(cases_date_dir)
-# div = len(files) // 2
-#
-# Run(files, var_file, div, data_dir=data_dir, cases_dir=cases_date_dir,
-#     out_dir=out_dir, replace_name='CFSv2_n_')
-#
-# # DMI con n ------------------------------------------------------------------ #
-# var_file = 'DMI_SON_Leads_r_CFSv2.nc'
-# data_dir = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/'
-# div = len(files) // 2
-# Run(files, var_file, div, data_dir=data_dir, cases_dir=cases_date_dir,
-#     out_dir=out_dir, replace_name='CFSv2_n_')
+# ---------------------------------------------------------------------------- #
+out_dir = '/pikachu/datos/luciano.andrian/cases_fields_EP_CP/aux_ep_cp_t/'
+# EP Td ---------------------------------------------------------------------- #
+var_file = 'EP_Td_SON_Leads_r_CFSv2.nc'
+data_dir = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/aux_ep_cp_t/'
+cases_date_dir = '/pikachu/datos/luciano.andrian/cases_dates_EP_CP/aux_ep_cp_t/'
+files = os.listdir(cases_date_dir)
+div = len(files) // 2
+
+Run(files, var_file, div, data_dir=data_dir, cases_dir=cases_date_dir,
+    out_dir=out_dir, replace_name='CFSv2_Td_')
+
+# CP Td ----------------------------------------------------------------------- #
+var_file = 'CP_Td_SON_Leads_r_CFSv2.nc'
+data_dir = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/aux_ep_cp_t/'
+cases_date_dir = '/pikachu/datos/luciano.andrian/cases_dates_EP_CP/aux_ep_cp_t/'
+files = os.listdir(cases_date_dir)
+div = len(files) // 2
+
+Run(files, var_file, div, data_dir=data_dir, cases_dir=cases_date_dir,
+    out_dir=out_dir, replace_name='CFSv2_Td_')
+
+# DMI con Td ----------------------------------------------------------------- #
+var_file = 'DMI_SON_Leads_r_CFSv2.nc'
+data_dir = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/'
+div = len(files) // 2
+Run(files, var_file, div, data_dir=data_dir, cases_dir=cases_date_dir,
+    out_dir=out_dir, replace_name='CFSv2_Td_')
+
+# ---------------------------------------------------------------------------- #
+# ---------------------------------------------------------------------------- #
+out_dir = '/pikachu/datos/luciano.andrian/cases_fields_EP_CP/aux_ep_cp_n/'
+# EP n ----------------------------------------------------------------------- #
+var_file = 'EP_n_SON_Leads_r_CFSv2.nc'
+data_dir = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/aux_ep_cp_n/'
+cases_date_dir = '/pikachu/datos/luciano.andrian/cases_dates_EP_CP/aux_ep_cp_n/'
+files = os.listdir(cases_date_dir)
+div = len(files) // 2
+
+Run(files, var_file, div, data_dir=data_dir, cases_dir=cases_date_dir,
+    out_dir=out_dir, replace_name='CFSv2_n_')
+
+# CP ------------------------------------------------------------------------- #
+var_file = 'CP_n_SON_Leads_r_CFSv2.nc'
+data_dir = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/aux_ep_cp_n/'
+cases_date_dir = '/pikachu/datos/luciano.andrian/cases_dates_EP_CP/aux_ep_cp_n/'
+files = os.listdir(cases_date_dir)
+div = len(files) // 2
+
+Run(files, var_file, div, data_dir=data_dir, cases_dir=cases_date_dir,
+    out_dir=out_dir, replace_name='CFSv2_n_')
+
+# DMI con n ------------------------------------------------------------------ #
+var_file = 'DMI_SON_Leads_r_CFSv2.nc'
+data_dir = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/'
+div = len(files) // 2
+Run(files, var_file, div, data_dir=data_dir, cases_dir=cases_date_dir,
+    out_dir=out_dir, replace_name='CFSv2_n_')
 
 print('# --------------------------------------------------------------------#')
 print('# --------------------------------------------------------------------#')

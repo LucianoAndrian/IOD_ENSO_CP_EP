@@ -180,21 +180,17 @@ def CheckSign(eof, pc1, pc2):
     if 'L' in eof.dims:
 
         for l in eof.L.values:
-            # try:
-            #     print('test0')
-            sign_pc1 = np.sign(eof.sel(mode=0, L=l, lon=slice(210, 250)).mean())
-            sign_pc2 = np.sign(eof.sel(mode=1, L=l, lon=slice(150, 180)).mean())
-            # except:
-            #     print('test1')
-            #     sign_pc1 = np.sign(eof.sel(mode=0, lon=slice(210, 250))[l,:,:].mean())
-            #     sign_pc2 = np.sign(eof.sel(mode=1, lon=slice(150, 180))[l,:,:].mean())
+            sign_pc1 = np.sign(eof.sel(mode=0, L=l, lon=slice(210, 250)).mean()).values
+            sign_pc2 = np.sign(eof.sel(mode=1, L=l, lon=slice(150, 180)).mean()).values
 
             if sign_pc1 < 0:
+                print(sign_pc1)
                 pc1_L = pc1.sel(time=pc1.time.dt.month.isin(10 - l)) * sign_pc1
             else:
                 pc1_L = pc1.sel(time=pc1.time.dt.month.isin(10 - l))
 
             if sign_pc2 < 0:
+                print(sign_pc1)
                 pc2_L = pc2.sel(time=pc2.time.dt.month.isin(10 - l)) * sign_pc2
             else:
                 pc2_L = pc2.sel(time=pc2.time.dt.month.isin(10 - l))
@@ -280,27 +276,88 @@ def PlotOne(field, levels = np.arange(-1,1.1,0.1), dpi=100, sa=False,
 
     plt.show()
 
+def RegreField(field, index, return_coef=False):
+    """
+    Devuelve la parte del campo `field` explicada linealmente por `index`.
+    """
+    field = field.rename({'time':'time2'})
+    field = field.stack(time=('time2', 'r'))
+    try:
+        name_var = list(field.data_vars)[0]
+        da = field[name_var]
+    except:
+        da = field
+        pass
+
+    da = da.where(~np.isnan(da), 0)
+
+    try:
+        name_var_index = list(index.data_vars)[0]
+        index = index[name_var_index]
+    except:
+        pass
+    index = index.rename({'time':'time2'})
+    index = index.stack(time=('time2', 'r'))
+    index = index.where(~np.isnan(index), 0)
+
+    # 2 usar el indice en "time" para usar esa dimencion para la regresion
+    da_idx = da.copy()
+    da_idx = da_idx.assign_coords(time=index)
+
+    # 3 Regresión
+    coef = da_idx.polyfit(dim='time', deg=1, skipna=True).polyfit_coefficients
+    beta      = coef.sel(degree=1)   # pendiente
+    intercept = coef.sel(degree=0)   # término independiente
+
+    # 4 Reconstruir la parte explicada y restaurar las fechas reales
+    fitted = beta * da_idx['time'] + intercept
+    fitted = fitted.assign_coords(time=da['time'])
+
+    if return_coef is True:
+        result = beta
+    else:
+        result = fitted
+
+    return result
 # ---------------------------------------------------------------------------- #
 
 sst = xr.open_dataset('/pikachu/datos/luciano.andrian/cases_fields/sst_son.nc')
 
 # Takahashi et al. 2011 ------------------------------------------------------ #
 sst_sel = sst.sel(lon=slice(110,290), lat=slice(-10,10))
-pc1_f_r, pc2_f_r, eof_f_r, _, _, _ = Compute(sst_sel, False)
-PlotOne(eof_f_r.sel(mode=0, L=1))
-# En algunos leads el oef puede tener signo cambiado
-# Acomodo los signos de cada pc en funcion del EOF
-pc1_ch, pc2_ch = CheckSign(eof_f_r, pc1_f_r, pc2_f_r)
+sst_pac = sst.sel(lon=slice(110,290), lat=slice(-60,20))
 
 if all_eof:
     pc1_f, pc2_f, eof_f, _, _, _ = Compute(sst_sel, True)
     PlotOne(eof_f.sel(mode=0))
     pc1_ch, pc2_ch = CheckSign(eof_f, pc1_f, pc2_f)
+else:
+    pc1_f_r, pc2_f_r, eof_f_r, _, _, _ = Compute(sst_sel, False)
+    PlotOne(eof_f_r.sel(mode=0, L=1))
+    # En algunos leads el oef puede tener signo cambiado
+    # Acomodo los signos de cada pc en funcion del EOF
+    pc1_ch, pc2_ch = CheckSign(eof_f_r, pc1_f_r, pc2_f_r)
+
 
 cp = (pc1_ch + pc2_ch)/np.sqrt(2)
 cp = cp.to_dataset(name='sst')
 ep = (pc1_ch - pc2_ch)/np.sqrt(2)
 ep = ep.to_dataset(name='sst')
+
+pc1_reg_tk = RegreField(sst_pac, pc1_ch, return_coef=True)
+pc2_reg_tk = RegreField(sst_pac, pc2_ch, return_coef=True)
+cp_reg_tk = RegreField(sst_pac, cp, return_coef=True)
+ep_reg_tk = RegreField(sst_pac, ep, return_coef=True)
+
+levels = [-0.9, -0.7, -0.5, -0.3, -0.1, 0, 0.1, 0.3, 0.5, 0.7, 0.9]
+PlotOne(pc1_reg_tk, levels=levels,
+        title='Regression Coef. PC1 - Takahashi et al. 2011')
+PlotOne(pc2_reg_tk, levels=levels,
+        title='Regression Coef. PC2 - Takahashi et al. 2011')
+PlotOne(cp_reg_tk, levels=levels,
+        title='Regression Coef. CP ENSO - Takahashi et al. 2011')
+PlotOne(ep_reg_tk, levels=levels,
+        title='Regression Coef. EP ENSO - Takahashi et al. 2011')
 
 # Tedeschi et al. 2014 ------------------------------------------------------- #
 cp_td = sst.sel(lon=slice(160, 210), lat=slice(-5,5)).mean(['lon', 'lat'])
