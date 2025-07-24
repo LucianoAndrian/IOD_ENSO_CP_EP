@@ -6,12 +6,12 @@ Sulivan et al. 2016
 """
 # ---------------------------------------------------------------------------- #
 plots = False
+save = False
+our_dir =  '/home/luciano.andrian/doc/IOD_ENSO_CP_EP/salidas/index_regre/'
 # ---------------------------------------------------------------------------- #
-import statsmodels.formula.api as smf
-import pandas as pd
 from eofs.xarray import Eof
 import xarray as xr
-from Funciones import DMI, Nino34CPC
+from Funciones import Nino34CPC
 import numpy as np
 import os
 os.environ['HDF5_USE_FILE_LOCKING'] = 'FALSE'
@@ -27,6 +27,12 @@ from matplotlib import colors
 import matplotlib.pyplot as plt
 import pandas as pd
 import matplotlib.dates as mdates
+
+if save:
+    dpi = 300
+else:
+    dpi = 100
+
 # ---------------------------------------------------------------------------- #
 def plotindex(index, indexwo, title='title', label='label'):
     plt.plot(index, color='k',
@@ -39,8 +45,9 @@ def plotindex(index, indexwo, title='title', label='label'):
     plt.title(title)
     plt.show()
 
-def PlotOne(field, levels = np.arange(-1,1.1,0.1), dpi=100, sa=False,
-            extend=None, title=''):
+def PlotOne(field, levels = np.arange(-1,1.1,0.1), dpi=dpi, sa=False,
+            extend=None, title='', name_fig='', out_dir=our_dir,
+            save=False):
 
     cbar = [
         # deep → pale blue              |  WHITE  |  pale → deep red
@@ -86,8 +93,11 @@ def PlotOne(field, levels = np.arange(-1,1.1,0.1), dpi=100, sa=False,
     ax.add_feature(cfeature.BORDERS, linewidth=0.5)
     ax.set_title(title)
     plt.tight_layout()
-
-    plt.show()
+    if save:
+        plt.savefig(f'{out_dir}{name_fig}.png', dpi=dpi)
+        plt.close()
+    else:
+        plt.show()
 
 def PlotTimeSeries(serie1, serie2, serie3, events_select=None,
                    label1='Serie 1', label2='Serie 2', label3='Serie 3',
@@ -207,13 +217,13 @@ pacequ = pacequ.transpose('time', 'lat', 'lon')
 
 # Takahashi et al. 2011 - EOF ------------------------------------------------ #
 solver = Eof(pacequ)
-eof = solver.eofsAsCovariance(neofs=2)
+eof_tk = solver.eofsAsCovariance(neofs=2)
 pcs = solver.pcs(pcscaling=1)
 var_per = np.around(solver.varianceFraction(neigs=3).values * 100,1)
 
 if plots:
-    PlotOne(eof[0])
-    PlotOne(eof[1])
+    PlotOne(eof_tk[0])
+    PlotOne(eof_tk[1])
 
 pc1 = -pcs.sel(mode=0)
 pc2 = -pcs.sel(mode=1)
