@@ -3,7 +3,9 @@ Calculo de los indices EP y CP en CFSv2
 """
 # ---------------------------------------------------------------------------- #
 out_dir = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/'
-save = True
+our_dir_plots = '/home/luciano.andrian/doc/IOD_ENSO_CP_EP/salidas/index_regre/'
+save_plots = True
+save = False
 all_eof = True
 
 # ---------------------------------------------------------------------------- #
@@ -19,6 +21,11 @@ warnings.filterwarnings("ignore", category=ShapelyDeprecationWarning)
 warnings.filterwarnings("ignore")
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
+
+if save_plots:
+    dpi = 300
+else:
+    dpi = 100
 
 # ---------------------------------------------------------------------------- #
 def Compute(data, modeL):
@@ -184,13 +191,11 @@ def CheckSign(eof, pc1, pc2):
             sign_pc2 = np.sign(eof.sel(mode=1, L=l, lon=slice(150, 180)).mean()).values
 
             if sign_pc1 < 0:
-                print(sign_pc1)
                 pc1_L = pc1.sel(time=pc1.time.dt.month.isin(10 - l)) * sign_pc1
             else:
                 pc1_L = pc1.sel(time=pc1.time.dt.month.isin(10 - l))
 
             if sign_pc2 < 0:
-                print(sign_pc1)
                 pc2_L = pc2.sel(time=pc2.time.dt.month.isin(10 - l)) * sign_pc2
             else:
                 pc2_L = pc2.sel(time=pc2.time.dt.month.isin(10 - l))
@@ -226,8 +231,9 @@ def CheckEvent(sst, cp, ep, year, lead, r):
     plt.title(f'CP:{cp_val}, EP:{ep_val}')
     plt.show()
 
-def PlotOne(field, levels = np.arange(-1,1.1,0.1), dpi=100, sa=False,
-            extend=None, title=''):
+def PlotOne(field, levels = np.arange(-1,1.1,0.1), dpi=dpi, sa=False,
+            extend=None, title='', name_fig='', out_dir=our_dir_plots,
+            save=False):
 
     cbar = [
         # deep → pale blue              |  WHITE  |  pale → deep red
@@ -273,8 +279,11 @@ def PlotOne(field, levels = np.arange(-1,1.1,0.1), dpi=100, sa=False,
     ax.add_feature(cfeature.BORDERS, linewidth=0.5)
     ax.set_title(title)
     plt.tight_layout()
-
-    plt.show()
+    if save:
+        plt.savefig(f'{out_dir}{name_fig}.png', dpi=dpi)
+        plt.close()
+    else:
+        plt.show()
 
 def RegreField(field, index, return_coef=False):
     """
@@ -338,30 +347,42 @@ else:
     # Acomodo los signos de cada pc en funcion del EOF
     pc1_ch, pc2_ch = CheckSign(eof_f_r, pc1_f_r, pc2_f_r)
 
-
 cp = (pc1_ch + pc2_ch)/np.sqrt(2)
 cp = cp.to_dataset(name='sst')
 ep = (pc1_ch - pc2_ch)/np.sqrt(2)
 ep = ep.to_dataset(name='sst')
 
-pc1_reg_tk = RegreField(sst_pac, pc1_ch, return_coef=True)
-pc2_reg_tk = RegreField(sst_pac, pc2_ch, return_coef=True)
-cp_reg_tk = RegreField(sst_pac, cp, return_coef=True)
-ep_reg_tk = RegreField(sst_pac, ep, return_coef=True)
+pc1_reg_tk = RegreField(sst, pc1_ch, return_coef=True)
+pc2_reg_tk = RegreField(sst, pc2_ch, return_coef=True)
+cp_reg_tk = RegreField(sst, cp, return_coef=True)
+ep_reg_tk = RegreField(sst, ep, return_coef=True)
 
 levels = [-0.9, -0.7, -0.5, -0.3, -0.1, 0, 0.1, 0.3, 0.5, 0.7, 0.9]
 PlotOne(pc1_reg_tk, levels=levels,
-        title='Regression Coef. PC1 - Takahashi et al. 2011')
+        title='Regression Coef. PC1 - Takahashi et al. 2011',
+        name_fig='pc1_reg_tk', save=save_plots, out_dir=our_dir_plots)
 PlotOne(pc2_reg_tk, levels=levels,
-        title='Regression Coef. PC2 - Takahashi et al. 2011')
+        title='Regression Coef. PC2 - Takahashi et al. 2011',
+        name_fig='pc2_reg_tk', save=save_plots, out_dir=our_dir_plots)
 PlotOne(cp_reg_tk, levels=levels,
-        title='Regression Coef. CP ENSO - Takahashi et al. 2011')
+        title='Regression Coef. CP ENSO - Takahashi et al. 2011',
+        name_fig='cp_reg_tk', save=save_plots, out_dir=our_dir_plots)
 PlotOne(ep_reg_tk, levels=levels,
-        title='Regression Coef. EP ENSO - Takahashi et al. 2011')
+        title='Regression Coef. EP ENSO - Takahashi et al. 2011',
+        name_fig='ep_reg_tk', save=save_plots, out_dir=our_dir_plots)
 
 # Tedeschi et al. 2014 ------------------------------------------------------- #
 cp_td = sst.sel(lon=slice(160, 210), lat=slice(-5,5)).mean(['lon', 'lat'])
 ep_td = sst.sel(lon=slice(220, 270), lat=slice(-5,5)).mean(['lon', 'lat'])
+
+cp_reg_td = RegreField(sst_pac, cp_td, return_coef=True)
+ep_reg_td = RegreField(sst_pac, ep_td, return_coef=True)
+PlotOne(cp_reg_td, levels=levels,
+        title='Regression Coef. CP ENSO - Tedeschi et al. 2014',
+        name_fig='cp_reg_td', save=save_plots, out_dir=our_dir_plots)
+PlotOne(ep_reg_td, levels=levels,
+        title='Regression Coef. EP ENSO - Tedeschi et al. 2014',
+        name_fig='ep_reg_td', save=save_plots, out_dir=our_dir_plots)
 
 # Sulivan et al. 2016 -------------------------------------------------------- #
 n3 = sst.sel(lon=slice(210, 270), lat=slice(-5,5)).mean(['lon', 'lat'])
@@ -372,6 +393,15 @@ n4 = (n4 - n4.mean('time'))/n4.std('time')
 
 ep_n = n3 - 0.5*n4
 cp_n = n4 - 0.5*n3
+
+cp_reg_n = RegreField(sst_pac, cp_n, return_coef=True)
+ep_reg_n = RegreField(sst_pac, ep_n, return_coef=True)
+PlotOne(cp_reg_n, levels=levels,
+        title='Regression Coef. CP ENSO - Sulivan et al. 2016',
+        name_fig='cp_reg_n', save=save_plots, out_dir=our_dir_plots)
+PlotOne(ep_reg_n, levels=levels,
+        title='Regression Coef. EP ENSO - Sulivan et al. 2016',
+        name_fig='ep_reg_n', save=save_plots, out_dir=our_dir_plots)
 
 # ---------------------------------------------------------------------------- #
 if save:
