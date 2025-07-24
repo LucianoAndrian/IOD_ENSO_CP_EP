@@ -375,8 +375,8 @@ PlotOne(ep_reg_tk, levels=levels,
 cp_td = sst.sel(lon=slice(160, 210), lat=slice(-5,5)).mean(['lon', 'lat'])
 ep_td = sst.sel(lon=slice(220, 270), lat=slice(-5,5)).mean(['lon', 'lat'])
 
-cp_reg_td = RegreField(sst_pac, cp_td, return_coef=True)
-ep_reg_td = RegreField(sst_pac, ep_td, return_coef=True)
+cp_reg_td = RegreField(sst, cp_td, return_coef=True)
+ep_reg_td = RegreField(sst, ep_td, return_coef=True)
 PlotOne(cp_reg_td, levels=levels,
         title='Regression Coef. CP ENSO - Tedeschi et al. 2014',
         name_fig='cp_reg_td', save=save_plots, out_dir=our_dir_plots)
@@ -394,8 +394,8 @@ n4 = (n4 - n4.mean('time'))/n4.std('time')
 ep_n = n3 - 0.5*n4
 cp_n = n4 - 0.5*n3
 
-cp_reg_n = RegreField(sst_pac, cp_n, return_coef=True)
-ep_reg_n = RegreField(sst_pac, ep_n, return_coef=True)
+cp_reg_n = RegreField(sst, cp_n, return_coef=True)
+ep_reg_n = RegreField(sst, ep_n, return_coef=True)
 PlotOne(cp_reg_n, levels=levels,
         title='Regression Coef. CP ENSO - Sulivan et al. 2016',
         name_fig='cp_reg_n', save=save_plots, out_dir=our_dir_plots)
