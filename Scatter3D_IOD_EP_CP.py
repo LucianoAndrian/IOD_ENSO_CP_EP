@@ -1,168 +1,74 @@
-
+"""
+Scatter plot DMI, EP, CP para exploracion
+"""
+# ---------------------------------------------------------------------------- #
+save = True
+out_dir = '/home/luciano.andrian/doc/IOD_ENSO_CP_EP/salidas/frames3d/'
+# ---------------------------------------------------------------------------- #
 import xarray as xr
 import matplotlib.pyplot as plt
-import numpy as np
 from matplotlib.lines import Line2D
+from matplotlib.colors import to_hex
+import matplotlib.cm as cm
+from itertools import product
+import numpy as np
 
+# ---------------------------------------------------------------------------- #
 dates_dir = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/'
 
-dmi = xr.open_dataset(dates_dir + 'DMI_SON_Leads_r_CFSv2.nc')
-ep = xr.open_dataset(dates_dir + 'EP_SON_Leads_r_CFSv2.nc')
-cp = xr.open_dataset(dates_dir + 'CP_SON_Leads_r_CFSv2.nc')
+# ---------------------------------------------------------------------------- #
 
-x = dmi.stack(time2=('time', 'r')).sst.values/dmi.std(['r', 'time']).sst.values
-y = ep.stack(time2=('time', 'r')).sst.values/ep.std(['r', 'time']).sst.values
-z = cp.stack(time2=('time', 'r')).sst.values/cp.std(['r', 'time']).sst.values
+def PlotScatter3D(x, y, z, elev, azim, name_fig, save, out_dir, alpha=0.8,
+                  thr=0.5):
+    dpi = 150
 
+    # clasificacion por thr
+    def encode(v):
+        return np.where(v > thr, 1, np.where(v < -thr, -1, 0))
 
-def plot_quadrants(ax, array, fixed_coord, cmap, alpha):
-    nx, ny, nz = array.shape
+    dx = encode(x)
+    dy = encode(y)
+    dz = encode(z)
 
-    # Rango espacial deseado
-    coord_min, coord_max = -4.5, 4.5
+    markers = ['o', '^', 's', 'P', '*', 'X', 'D', 'v', 'h', '<']
 
-    index = {
-        'x': (nx // 2, slice(None), slice(None)),
-        'y': (slice(None), ny // 2, slice(None)),
-        'z': (slice(None), slice(None), nz // 2),
-    }[fixed_coord]
-    plane_data = array[index]
+    # combinaciones y colores, label, marker
+    combos = []
+    color_map = {}
+    label_map = {}
+    marker_map = {}
 
-    n0, n1 = plane_data.shape
+    base_cmap = cm.get_cmap('hsv', 27)
+    combo_colors = [to_hex(base_cmap(i)) for i in range(27)]
 
-    # Crear vectores de coordenadas para cada dimensión en rango [-4.5, 4.5]
-    # Para cada mitad de la dimensión, usamos la mitad del rango total
-    half_len = (coord_max - coord_min) / 2  # 9/2 = 4.5
+    i = 0
+    for dx_i, dy_i, dz_i in product([-1, 0, 1], repeat=3):
+        label_parts = []
+        for val, name in zip([dx_i, dy_i, dz_i], ['DMI', 'EP', 'CP']):
+            if val == 1:
+                label_parts.append(f'{name}+')
+            elif val == -1:
+                label_parts.append(f'{name}-')
+            else:
+                label_parts.append(f'')
 
-    # En cada cuadrante se representan n0/2 y n1/2 puntos, así que usamos linspace para esos tamaños
-    coord0 = np.linspace(coord_min, coord_min + half_len, n0 // 2)
-    coord1 = np.linspace(coord_min, coord_min + half_len, n1 // 2)
+        label = ' '.join([p for p in label_parts if p])
+        key = (dx_i, dy_i, dz_i)
+        combos.append(key)
+        color_map[key] = combo_colors[i]
+        label_map[key] = label if label else 'Neutral'
+        marker_map[key] = markers[i % len(markers)]
+        i += 1
 
-    quadrants = [
-        plane_data[:n0 // 2, :n1 // 2],
-        plane_data[:n0 // 2, n1 // 2:],
-        plane_data[n0 // 2:, :n1 // 2],
-        plane_data[n0 // 2:, n1 // 2:]
-    ]
-
-    min_val = array.min()
-    max_val = array.max()
-
-    cmap = plt.get_cmap(cmap)
-
-    for i, quadrant in enumerate(quadrants):
-        facecolors = cmap((quadrant - min_val) / (max_val - min_val))
-
-        if fixed_coord == 'x':
-            # Para Y y Z: se crean las mallas para el tamaño del cuadrante
-            Y, Z = np.meshgrid(coord0, coord1, indexing='ij')
-            X = (coord_min + half_len) * np.ones_like(
-                Y)  # plano fijo en x = 0 para el centro, se ajusta abajo
-
-            # El offset depende del cuadrante: sumamos half_len para mover a la derecha o arriba
-            Y_offset = (i // 2) * half_len
-            Z_offset = (i % 2) * half_len
-
-            ax.plot_surface(X, Y + Y_offset, Z + Z_offset, rstride=1, cstride=1,
-                            facecolors=facecolors, shade=True, alpha=alpha)
-
-        elif fixed_coord == 'y':
-            X, Z = np.meshgrid(coord0, coord1, indexing='ij')
-            Y = (coord_min + half_len) * np.ones_like(X)
-
-            X_offset = (i // 2) * half_len
-            Z_offset = (i % 2) * half_len
-
-            ax.plot_surface(X + X_offset, Y, Z + Z_offset, rstride=1, cstride=1,
-                            facecolors=facecolors, shade=True, alpha=alpha)
-
-        elif fixed_coord == 'z':
-            X, Y = np.meshgrid(coord0, coord1, indexing='ij')
-            Z = (coord_min + half_len) * np.ones_like(X)
-
-            X_offset = (i // 2) * half_len
-            Y_offset = (i % 2) * half_len
-
-            ax.plot_surface(X + X_offset, Y + Y_offset, Z, rstride=1, cstride=1,
-                            facecolors=facecolors, shade=True, alpha=alpha)
-
-def PlotScatter3D(x, y, z, elev, azim, name_fig, save, out_dir, alpha_walls=0.1):
-
-    dpi = 100
-    if save:
-        dpi=300
-
-    mask_neutral = (np.abs(x) < 0.5) & (np.abs(y) < 0.5) & (np.abs(z) < 0.5)
-    point_colors = np.empty_like(x, dtype='<U10')
-    point_colors[mask_neutral] = 'k'
-
-    quadrant_index = (x > 0).astype(int) * 4 + (y > 0).astype(int) * 2 + (
-                z > 0).astype(int)
-
-    colors = np.array([
-        'navy',  # 0: - - -
-        'blue',  # 1: - - +
-        'green',  # 2: - + -
-        'cyan',  # 3: - + +
-        'magenta',  # 4: + - -
-        'red',  # 5: + - +
-        '#FF5B12',  # 6: + + -
-        '#8B1E1E'  # 7: + + +
-    ])
-    labels = [
-        'DMI-, EP-, CP-',
-        'DMI-, EP-, CP+',
-        'DMI-, EP+, CP-',
-        'DMI-, EP+, CP+',
-        'DMI+, EP-, CP-',
-        'DMI+, EP-, CP+',
-        'DMI+, EP+, CP-',
-        'DMI+, EP+, CP+'
-    ]
-
-    for i in range(8):
-        point_colors[(quadrant_index == i) & ~mask_neutral] = colors[i]
-
-
-    fig = plt.figure(dpi=dpi, figsize=(8,5))
+    # ------------------------------------------------------------------------ #
+    fig = plt.figure(dpi=dpi, figsize=(7, 7))
     ax = fig.add_subplot(111, projection='3d')
+    ax.set_box_aspect([1, 1, 1])
 
-    nx, ny, nz = 70, 100, 50
-    r_square = (np.mgrid[-1:1:1j * nx, -1:1:1j * ny, -1:1:1j * nz] ** 2).sum(0)
-    ax.set_box_aspect(r_square.shape)
-    cmap = 'binary'
-    plot_quadrants(ax, r_square, 'x', cmap=cmap, alpha=alpha_walls)
-    plot_quadrants(ax, r_square, 'y', cmap=cmap, alpha=alpha_walls)
-    plot_quadrants(ax, r_square, 'z', cmap=cmap, alpha=alpha_walls)
+    ax.plot([-4.5, 4.5], [0, 0], [0, 0], color='gray', linestyle='--', alpha=1)
+    ax.plot([0, 0], [-4.5, 4.5], [0, 0], color='gray', linestyle='--', alpha=1)
+    ax.plot([0, 0], [0, 0], [-4.5, 4.5], color='gray', linestyle='--', alpha=1)
 
-    sc = ax.scatter(x, y, z, c=point_colors, marker='.', alpha=0.8,
-                    depthshade=True, zorder=1)
-
-    # Planos guía
-    ax.plot([-4.5, 4.5], [0, 0], [0, 0], color='gray', linestyle='--',
-            alpha=1)  # Eje X
-    ax.plot([0, 0], [-4.5, 4.5], [0, 0], color='gray', linestyle='--',
-            alpha=1)  # Eje Y
-    ax.plot([0, 0], [0, 0], [-4.5, 4.5], color='gray', linestyle='--',
-            alpha=1)  # Eje Z
-
-    # range_ = np.linspace(-4.5, 4.5, 10)
-
-    # # Plano Y=0 (X-Z)
-    # X, Z = np.meshgrid(range_, range_)
-    # Y = np.zeros_like(X)
-    # ax.plot_surface(X, Y, Z, color='white', alpha=alpha_walls)
-    #
-    # # Plano X=0 (Y-Z)
-    # Y, Z = np.meshgrid(range_, range_)
-    # X = np.zeros_like(Y)
-    # ax.plot_surface(X, Y, Z, color='white', alpha=alpha_walls)
-    #
-    # # Plano Z=0 (X-Y)
-    # X, Y = np.meshgrid(range_, range_)
-    # Z = np.zeros_like(X)
-    # ax.plot_surface(X, Y, Z, color='white', alpha=alpha_walls)
-    #
     ax.set_xlabel('DMI')
     ax.set_ylabel('EP')
     ax.set_zlabel('CP')
@@ -171,44 +77,88 @@ def PlotScatter3D(x, y, z, elev, azim, name_fig, save, out_dir, alpha_walls=0.1)
     ax.set_ylim([-4.5, 4.5])
     ax.set_zlim([-4.5, 4.5])
 
+    for k in combos:
+        mask = (dx == k[0]) & (dy == k[1]) & (dz == k[2])
+        if not np.any(mask):
+            continue
+        ax.scatter(x[mask], y[mask], z[mask],
+                   c=color_map[k],
+                   marker=marker_map[k],
+                   alpha=alpha,
+                   label=label_map[k],
+                   edgecolors='k', linewidths=0.3,
+                   s=40,  # tamaño puntos, ajustá si querés
+                   depthshade=True,
+                   zorder=1)
+
+    ncol = 4
+    fig.subplots_adjust(bottom=0.25)
+
     legend_elements = [
-        Line2D([0], [0], marker='.', color='w', label=label,
-               markerfacecolor=color, markeredgecolor=color, markersize=8,
+        Line2D([0], [0], marker=marker_map[k], color='w',
+               label=label_map[k],
+               markerfacecolor=color_map[k],
+               markeredgecolor='k', markersize=8,
                linestyle='None')
-        for label, color in zip(labels, colors)
+        for k in combos if np.any((dx == k[0]) & (dy == k[1]) & (dz == k[2]))
     ]
 
-    legend_elements.insert(0, Line2D([0], [0], marker='.', color='w',
-                                     label='|DMI|,|EP|,|CP| < 0.5',
-                                     markerfacecolor='k',
-                                     markeredgecolor='k', markersize=8,
-                                     linestyle='None'))
-
-    ax.legend(handles=legend_elements, loc='upper left',
-              bbox_to_anchor=(1.05, 1), title='Categorías')
+    fig.legend(handles=legend_elements,
+               loc='lower center',
+               bbox_to_anchor=(0.5, -0.1),
+               ncol=ncol,
+               title='Categorías',
+               fontsize='small',
+               frameon=False)
 
     plt.tight_layout()
 
     if save:
-        plt.savefig(f'{out_dir}{name_fig}.png', dpi=dpi)
+        plt.savefig(f'{out_dir}{name_fig}.png', dpi=dpi, bbox_inches='tight',
+                    pad_inches=0.05)
         plt.close()
     else:
         plt.show()
 
-# EP vs CP
-PlotScatter3D(x, y, z, elev=0, azim=0,
-              name_fig='', save=False, out_dir='')
+def generate_rotation_sequence(x, y, z, out_dir,
+                               steps_per_transition=30, alpha=0.8, thr=0.5,
+                               save=False):
+    frame_num = 0
+    positions = [(0, 0), (90, -90), (0, -90), (0, 90), (-90, 180)]
 
-# DMI vs EP
-PlotScatter3D(x, y, z, elev=90, azim=-90,
-              name_fig='', save=False, out_dir='')
+    # auxiliar para interpolar ángulos (lineal)
+    def interp_angles(start, end, num):
+        return np.linspace(start, end, num)
 
-# DMI  vs CP
-PlotScatter3D(x, y, z, elev=0, azim=-90,
-              name_fig='', save=False, out_dir='')
+    for i in range(len(positions)):
+        start = positions[i]
+        end = positions[(i + 1) % len(positions)]  # ciclo cerrado
 
-PlotScatter3D(x, y, z, elev=25, azim=45,
-              name_fig='', save=False, out_dir='')
+        elev_seq = interp_angles(start[0], end[0], steps_per_transition)
+        azim_seq = interp_angles(start[1], end[1], steps_per_transition)
 
-PlotScatter3D(x, y, z, elev=25, azim=45,
-              name_fig='', save=False, out_dir='', alpha_walls=0.5)
+        for elev, azim in zip(elev_seq, azim_seq):
+            filename = f'frame_{frame_num:03d}'
+            print(
+                f'Generating {filename} with elev={elev:.1f}, azim={azim:.1f}')
+            PlotScatter3D(x, y, z,
+                          elev=elev, azim=azim,
+                          name_fig=filename, save=save, out_dir=out_dir,
+                          alpha=alpha, thr=thr)
+            frame_num += 1
+
+# ---------------------------------------------------------------------------- #
+dmi = xr.open_dataset(dates_dir + 'DMI_SON_Leads_r_CFSv2.nc')
+ep = xr.open_dataset(dates_dir + 'EP_SON_Leads_r_CFSv2.nc')
+cp = xr.open_dataset(dates_dir + 'CP_SON_Leads_r_CFSv2.nc')
+
+x = dmi.stack(time2=('time', 'r')).sst.values/dmi.std(['r', 'time']).sst.values
+y = ep.stack(time2=('time', 'r')).sst.values/ep.std(['r', 'time']).sst.values
+z = cp.stack(time2=('time', 'r')).sst.values/cp.std(['r', 'time']).sst.values
+
+# ---------------------------------------------------------------------------- #
+generate_rotation_sequence(x, y, z, out_dir=out_dir, steps_per_transition=45,
+                           save=save)
+
+# ---------------------------------------------------------------------------- #
+# ---------------------------------------------------------------------------- #
