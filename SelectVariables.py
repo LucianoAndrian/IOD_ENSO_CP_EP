@@ -11,7 +11,6 @@ from Funciones import SelectVariables
 import os
 os.environ['HDF5_USE_FILE_LOCKING'] = 'FALSE'
 # ---------------------------------------------------------------------------- #
-save_nc = False
 out_dir = '/pikachu/datos/luciano.andrian/cases_fields_EP_CP/'
 
 cases_date_dir = '/pikachu/datos/luciano.andrian/cases_dates_EP_CP/'

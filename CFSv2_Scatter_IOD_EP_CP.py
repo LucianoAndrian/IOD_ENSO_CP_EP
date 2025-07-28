@@ -83,7 +83,7 @@ def SelectParIndex(case, idx1_name, idx2_name,
 
 def PlotScatter(idx1_name, idx2_name, idx1_sd, idx2_sd, save=save, 
                 out_dir=out_dir,  name_fig='fig', dpi=dpi,
-                cases_dir='', index_dir='', plot_mod_all=False):
+                cases_dir='', index_dir='', add_all=False):
 
     idx1_name = idx1_name#.upper()
     idx1 = idx1_name.lower()
@@ -154,7 +154,7 @@ def PlotScatter(idx1_name, idx2_name, idx1_sd, idx2_sd, save=save,
         open_idx1=False, open_idx2=False,
         cases_dir=cases_dir, index_dir=index_dir)
 
-    if plot_mod_all is True:
+    if add_all is True:
         # todos
         case = f'CFSv2_todo_{idx1}_neg_SON.nc'
         idx1_todo_neg, idx2_in_idx1_todo_neg = SelectParIndex(
@@ -190,65 +190,64 @@ def PlotScatter(idx1_name, idx2_name, idx1_sd, idx2_sd, save=save,
     scatter_size_fix = 3
     fig, ax = plt.subplots(dpi=dpi, figsize=(7.08661, 7.08661))
 
-    if plot_mod_all is True:
+    # neutros
+    ax.scatter(x=idx1_neutros, y=idx2_neutros, marker='o',
+               label=f'{idx1_name} vs. {idx2_name}',
+               s=30 * scatter_size_fix, edgecolor='k', color='dimgray',
+               alpha=1)
+    # dmi puros
+    ax.scatter(x=idx1_puros_pos, y=idx2_in_idx1_puros_pos, marker='o',
+               s=30 * scatter_size_fix, edgecolor='k', color='#8B1E1E',
+               alpha=1, label=f'{idx1_name}+')
+    ax.scatter(x=idx1_puros_neg, y=idx2_in_idx1_puros_neg, marker='o',
+               s=30 * scatter_size_fix, edgecolor='k', color='#7CCD73',
+               alpha=1, label=f'{idx1_name}-')
+
+    # ep puros
+    ax.scatter(x=idx1_in_idx2_puros_pos, y=idx2_puros_pos, marker='o',
+               s=30 * scatter_size_fix, edgecolor='k', color='navy',
+               alpha=1,
+               label=f'{idx2_name}+')
+    ax.scatter(x=idx1_in_idx2_puros_neg, y=idx2_puros_neg, marker='o',
+               s=30 * scatter_size_fix, edgecolor='k', color='#DE00FF',
+               alpha=1, label=f'{idx2_name}-')
+
+    # sim
+    ax.scatter(x=idx1_sim_pos, y=idx2_sim_pos, marker='o',
+               s=30 * scatter_size_fix,
+               edgecolor='k', color='#FF5B12', alpha=1,
+               label=f'{idx1_name}+ & {idx2_name}+')
+    ax.scatter(x=idx1_sim_neg, y=idx2_sim_neg, marker='o',
+               s=30 * scatter_size_fix,
+               edgecolor='k', color='#63A6FF', alpha=1,
+               label=f'{idx1_name}- & {idx2_name}-')
+
+    # sim opp. sing
+    ax.scatter(x=idx1_pos_idx2_neg, y=idx2_in_idx1_pos_idx2_neg, marker='o',
+               s=30 * scatter_size_fix, edgecolor='k', color='#FF9232',
+               alpha=1,
+               label=f'{idx1_name}+ & {idx2_name}-')
+    ax.scatter(x=idx1_neg_idx2_pos, y=idx2_in_idx1_neg_idx2_pos, marker='o',
+               s=30 * scatter_size_fix, edgecolor='k', color='gold',
+               alpha=1,
+               label=f'{idx1_name}- & {idx2_name}+')
+
+    if add_all is True:
         # todos
         ax.scatter(x=idx1_todo_pos, y=idx2_in_idx1_todo_pos, marker='x',
-                   s=5 * scatter_size_fix, edgecolor='k', color='k', alpha=1)
+                   s=3 * scatter_size_fix, edgecolor='k', color='k', alpha=0.5)
 
         ax.scatter(x=idx1_todo_neg, y=idx2_in_idx1_todo_neg, marker='x',
-                   s=5 * scatter_size_fix, edgecolor='k', color='k', alpha=1)
+                   s=3* scatter_size_fix, edgecolor='k', color='k', alpha=0.5)
 
         ax.scatter(x=idx1_in_idx2_todo_pos, y=idx2_todo_pos, marker='x',
-                   s=5 * scatter_size_fix, edgecolor='k', color='k', alpha=1)
+                   s=3 * scatter_size_fix, edgecolor='k', color='k', alpha=0.5)
 
         ax.scatter(x=idx1_in_idx2_todo_neg, y=idx2_todo_neg, marker='x',
-                   s=5 * scatter_size_fix, edgecolor='k', color='k', alpha=1)
+                   s=3 * scatter_size_fix, edgecolor='k', color='k', alpha=0.5)
 
-        ax.scatter(x=idx1_neutros, y=idx2_neutros, marker='o',
-                   s=5 * scatter_size_fix, edgecolor='k', color='k', alpha=1)
-
-    else:
-        # neutros
-        ax.scatter(x=idx1_neutros, y=idx2_neutros, marker='o',
-                   label=f'{idx1_name} vs. {idx2_name}',
-                   s=30 * scatter_size_fix, edgecolor='k', color='dimgray',
-                   alpha=1)
-        # dmi puros
-        ax.scatter(x=idx1_puros_pos, y=idx2_in_idx1_puros_pos, marker='o',
-                   s=30 * scatter_size_fix, edgecolor='k', color='#8B1E1E',
-                   alpha=1, label=f'{idx1_name}+')
-        ax.scatter(x=idx1_puros_neg, y=idx2_in_idx1_puros_neg, marker='o',
-                   s=30 * scatter_size_fix, edgecolor='k', color='#7CCD73',
-                   alpha=1, label=f'{idx1_name}-')
-
-        # ep puros
-        ax.scatter(x=idx1_in_idx2_puros_pos, y=idx2_puros_pos, marker='o',
-                   s=30 * scatter_size_fix, edgecolor='k', color='navy',
-                   alpha=1,
-                   label=f'{idx2_name}+')
-        ax.scatter(x=idx1_in_idx2_puros_neg, y=idx2_puros_neg, marker='o',
-                   s=30 * scatter_size_fix, edgecolor='k', color='#DE00FF',
-                   alpha=1, label=f'{idx2_name}-')
-
-        # sim
-        ax.scatter(x=idx1_sim_pos, y=idx2_sim_pos, marker='o',
-                   s=30 * scatter_size_fix,
-                   edgecolor='k', color='#FF5B12', alpha=1,
-                   label=f'{idx1_name}+ & {idx2_name}+')
-        ax.scatter(x=idx1_sim_neg, y=idx2_sim_neg, marker='o',
-                   s=30 * scatter_size_fix,
-                   edgecolor='k', color='#63A6FF', alpha=1,
-                   label=f'{idx1_name}- & {idx2_name}-')
-
-        # sim opp. sing
-        ax.scatter(x=idx1_pos_idx2_neg, y=idx2_in_idx1_pos_idx2_neg, marker='o',
-                   s=30 * scatter_size_fix, edgecolor='k', color='#FF9232',
-                   alpha=1,
-                   label=f'{idx1_name}+ & {idx2_name}-')
-        ax.scatter(x=idx1_neg_idx2_pos, y=idx2_in_idx1_neg_idx2_pos, marker='o',
-                   s=30 * scatter_size_fix, edgecolor='k', color='gold',
-                   alpha=1,
-                   label=f'{idx1_name}- & {idx2_name}+')
+        ax.scatter(x=idx1_neutros, y=idx2_neutros, marker='x',
+                   s=3 * scatter_size_fix, edgecolor='k', color='k', alpha=0.5)
 
     ax.legend(loc=(.01, .57), fontsize=label_legend_size)
     ax.tick_params(axis='both', which='major', labelsize=tick_label_size, pad=1)
@@ -301,17 +300,17 @@ PlotScatter(idx1_name='EP', idx2_name='CP',
 PlotScatter(idx1_name='DMI', idx2_name='EP',
             idx1_sd=sd_dmi_s, idx2_sd= sd_ep_s, save=save,
             name_fig='Scatter_DMI-EP_todo',
-            cases_dir=cases_dir, index_dir=index_dir, plot_mod_all=True)
+            cases_dir=cases_dir, index_dir=index_dir, add_all=True)
 
 PlotScatter(idx1_name='DMI', idx2_name='CP',
             idx1_sd=sd_dmi_s, idx2_sd= sd_cp_s, save=save,
             name_fig='Scatter_DMI-CP_todo',
-            cases_dir=cases_dir, index_dir=index_dir, plot_mod_all=True)
+            cases_dir=cases_dir, index_dir=index_dir, add_all=True)
 
 PlotScatter(idx1_name='EP', idx2_name='CP',
             idx1_sd=sd_ep_s, idx2_sd= sd_cp_s, save=save,
             name_fig='Scatter_EP-CP_todo',
-            cases_dir=cases_dir, index_dir=index_dir, plot_mod_all=True)
+            cases_dir=cases_dir, index_dir=index_dir, add_all=True)
 
 # ---------------------------------------------------------------------------- #
 cases_dir = '/pikachu/datos/luciano.andrian/cases_fields_EP_CP/aux_ep_cp_t/'
@@ -338,17 +337,17 @@ PlotScatter(idx1_name='EP', idx2_name='CP',
 PlotScatter(idx1_name='DMI', idx2_name='EP',
             idx1_sd=sd_dmi_s, idx2_sd= sd_ep_s, save=save,
             name_fig='Scatter_DMI-EP_Td_todo',
-            cases_dir=cases_dir, index_dir=index_dir, plot_mod_all=True)
+            cases_dir=cases_dir, index_dir=index_dir, add_all=True)
 
 PlotScatter(idx1_name='DMI', idx2_name='CP',
             idx1_sd=sd_dmi_s, idx2_sd= sd_cp_s, save=save,
             name_fig='Scatter_DMI-CP_Td_todo',
-            cases_dir=cases_dir, index_dir=index_dir, plot_mod_all=True)
+            cases_dir=cases_dir, index_dir=index_dir, add_all=True)
 
 PlotScatter(idx1_name='EP', idx2_name='CP',
             idx1_sd=sd_ep_s, idx2_sd= sd_cp_s, save=save,
             name_fig='Scatter_EP-CP_Td_todo',
-            cases_dir=cases_dir, index_dir=index_dir, plot_mod_all=True)
+            cases_dir=cases_dir, index_dir=index_dir, add_all=True)
 # ---------------------------------------------------------------------------- #
 cases_dir = '/pikachu/datos/luciano.andrian/cases_fields_EP_CP/aux_ep_cp_n/'
 index_dir = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/aux_ep_cp_n/'
@@ -374,17 +373,17 @@ PlotScatter(idx1_name='EP', idx2_name='CP',
 PlotScatter(idx1_name='DMI', idx2_name='EP',
             idx1_sd=sd_dmi_s, idx2_sd= sd_ep_s, save=save,
             name_fig='Scatter_DMI-EP_n_todo',
-            cases_dir=cases_dir, index_dir=index_dir, plot_mod_all=True)
+            cases_dir=cases_dir, index_dir=index_dir, add_all=True)
 
 PlotScatter(idx1_name='DMI', idx2_name='CP',
             idx1_sd=sd_dmi_s, idx2_sd= sd_cp_s, save=save,
             name_fig='Scatter_DMI-CP_n_todo',
-            cases_dir=cases_dir, index_dir=index_dir, plot_mod_all=True)
+            cases_dir=cases_dir, index_dir=index_dir, add_all=True)
 
 PlotScatter(idx1_name='EP', idx2_name='CP',
             idx1_sd=sd_ep_s, idx2_sd= sd_cp_s, save=save,
             name_fig='Scatter_EP-CP_n_todo',
-            cases_dir=cases_dir, index_dir=index_dir, plot_mod_all=True)
+            cases_dir=cases_dir, index_dir=index_dir, add_all=True)
 
 print('# --------------------------------------------------------------------#')
 print('# --------------------------------------------------------------------#')
