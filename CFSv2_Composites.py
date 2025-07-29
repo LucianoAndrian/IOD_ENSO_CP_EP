@@ -2,9 +2,13 @@
 Composites
 """
 # ---------------------------------------------------------------------------- #
-save = True
+save = False
 out_dir = '/home/luciano.andrian/doc/IOD_ENSO_CP_EP/salidas/'
 cases_fields = '/pikachu/datos/luciano.andrian/cases_fields_EP_CP/'
+
+plot_td = True
+plot_n = True
+
 # ---------------------------------------------------------------------------- #
 import os
 os.environ['HDF5_USE_FILE_LOCKING'] = 'FALSE'
@@ -56,9 +60,11 @@ def Combinations(idx, indices):
     return idx, idx_aux2, idx_aux3
 
 def OpenSetCases(var, idx1, idx2, idx3, phase, dir):
-    if var == 'prec':
+
+
+    if 'prec' in var:
         fix = 30
-    elif var == 'tref' or var == 'sst':
+    elif 'tref' in var or var == 'sst':
         fix = 1
     elif var:
         fix = 9.8
@@ -254,6 +260,111 @@ for v, scale, cbar in zip(variables, aux_scales, aux_cbar):
                   num_cases=None, num_cases_data=None, num_cols=3,
                   ocean_mask=ocean_mask, pdf=False, levels_ctn=levels_ctn,
                   data_ctn_no_ocean_mask=True)
+
+print('# --------------------------------------------------------------------#')
+print('# Td -----------------------------------------------------------------#')
+if plot_td:
+    out_dir = '/home/luciano.andrian/doc/IOD_ENSO_CP_EP/salidas/comp_td/'
+    cases_fields = '/pikachu/datos/luciano.andrian/cases_fields_EP_CP/' \
+                    'aux_ep_cp_t/'
+
+    variables = ['sst']
+    aux_scales = [scale_t]
+    aux_cbar = [cbar]
+
+    for v, scale, cbar in zip(variables, aux_scales, aux_cbar):
+        for f in ['pos', 'neg']:
+            cases = OpenSetCases(var=v,
+                                 idx1='dmi', idx2='ep', idx3='cp',
+                                 phase=f,
+                                 dir=cases_fields)
+
+            cases_ordenados, titles = MakeComposite(cases)
+
+            name = f'{v}_comp_IOD-EP-CP_{f}'
+
+            if v == 'tref' or v == 'prec':
+                map = 'sa'
+
+                cases_hgt750 = OpenSetCases(var='hgt',
+                                            idx1='dmi', idx2='ep', idx3='cp',
+                                            phase=f,
+                                            dir=cases_fields)
+
+                cases_ordenados_hgt, _ = MakeComposite(cases_hgt750)
+                data_ctn = cases_ordenados_hgt
+                levels_ctn = aux_scale_hgt
+                data_ctn_no_ocean_mask = True
+                ocean_mask = True
+                high = 3
+            else:
+                map = 'hs'
+                data_ctn = cases_ordenados
+                levels_ctn = scale
+                ocean_mask = False
+                high = 1.3
+
+            name_fig = f'comp_{v}_{f}'
+            PlotFinal(data=cases_ordenados, levels=scale, cmap=cbar,
+                      titles=titles, namefig=name_fig, map=map,
+                      save=save, dpi=dpi, out_dir=out_dir,
+                      data_ctn=data_ctn, color_ctn='k', high=high,
+                      num_cases=None, num_cases_data=None, num_cols=3,
+                      ocean_mask=ocean_mask, pdf=False, levels_ctn=levels_ctn,
+                      data_ctn_no_ocean_mask=True)
+
+
+print('# --------------------------------------------------------------------#')
+print('# n ------------------------------------------------------------------#')
+if plot_td:
+    out_dir = '/home/luciano.andrian/doc/IOD_ENSO_CP_EP/salidas/comp_n/'
+    cases_fields = '/pikachu/datos/luciano.andrian/cases_fields_EP_CP/' \
+                    'aux_ep_cp_n/'
+
+    variables = ['sst']
+    aux_scales = [scale_t]
+    aux_cbar = [cbar]
+
+    for v, scale, cbar in zip(variables, aux_scales, aux_cbar):
+        for f in ['pos', 'neg']:
+            cases = OpenSetCases(var=v,
+                                 idx1='dmi', idx2='ep', idx3='cp',
+                                 phase=f,
+                                 dir=cases_fields)
+
+            cases_ordenados, titles = MakeComposite(cases)
+
+            name = f'{v}_comp_IOD-EP-CP_{f}'
+
+            if v == 'tref' or v == 'prec':
+                map = 'sa'
+
+                cases_hgt750 = OpenSetCases(var='hgt',
+                                            idx1='dmi', idx2='ep', idx3='cp',
+                                            phase=f,
+                                            dir=cases_fields)
+
+                cases_ordenados_hgt, _ = MakeComposite(cases_hgt750)
+                data_ctn = cases_ordenados_hgt
+                levels_ctn = aux_scale_hgt
+                data_ctn_no_ocean_mask = True
+                ocean_mask = True
+                high = 3
+            else:
+                map = 'hs'
+                data_ctn = cases_ordenados
+                levels_ctn = scale
+                ocean_mask = False
+                high = 1.3
+
+            name_fig = f'comp_{v}_{f}'
+            PlotFinal(data=cases_ordenados, levels=scale, cmap=cbar,
+                      titles=titles, namefig=name_fig, map=map,
+                      save=save, dpi=dpi, out_dir=out_dir,
+                      data_ctn=data_ctn, color_ctn='k', high=high,
+                      num_cases=None, num_cases_data=None, num_cols=3,
+                      ocean_mask=ocean_mask, pdf=False, levels_ctn=levels_ctn,
+                      data_ctn_no_ocean_mask=True)
 
 print('# --------------------------------------------------------------------#')
 print('# --------------------------------------------------------------------#')
