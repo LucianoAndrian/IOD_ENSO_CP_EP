@@ -7,6 +7,10 @@ out_dir = '/home/luciano.andrian/doc/IOD_ENSO_CP_EP/salidas/frames3d/'
 out_dir_ep_cp = '/home/luciano.andrian/doc/IOD_ENSO_CP_EP/salidas/frames3d/ep_cp/'
 out_dir_ep_dmi = '/home/luciano.andrian/doc/IOD_ENSO_CP_EP/salidas/frames3d/ep_dmi/'
 out_dir_cp_dmi = '/home/luciano.andrian/doc/IOD_ENSO_CP_EP/salidas/frames3d/cp_dmi/'
+
+out_dir_td = '/home/luciano.andrian/doc/IOD_ENSO_CP_EP/salidas/frames3d/frames_td/'
+out_dir_n = '/home/luciano.andrian/doc/IOD_ENSO_CP_EP/salidas/frames3d/frames_n/'
+
 # ---------------------------------------------------------------------------- #
 import xarray as xr
 import matplotlib.pyplot as plt
@@ -18,6 +22,9 @@ import numpy as np
 
 # ---------------------------------------------------------------------------- #
 dates_dir = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/'
+
+dates_dir_td = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/aux_ep_cp_t/'
+dates_dir_n = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/aux_ep_cp_n/'
 
 # ---------------------------------------------------------------------------- #
 
@@ -311,3 +318,38 @@ generate_rotation_sequence_filter(x, y, z, out_dir=out_dir_ep_dmi,
 
 # ---------------------------------------------------------------------------- #
 # ---------------------------------------------------------------------------- #
+# Td
+dmi = xr.open_dataset(dates_dir + 'DMI_SON_Leads_r_CFSv2.nc')
+ep = xr.open_dataset(dates_dir_td + 'EP_Td_SON_Leads_r_CFSv2.nc')
+cp = xr.open_dataset(dates_dir_td + 'CP_Td_SON_Leads_r_CFSv2.nc')
+
+x = dmi.stack(time2=('time', 'r')).sst.values/dmi.std(['r', 'time']).sst.values
+y = ep.stack(time2=('time', 'r')).sst.values/ep.std(['r', 'time']).sst.values
+z = cp.stack(time2=('time', 'r')).sst.values/cp.std(['r', 'time']).sst.values
+
+# ---------------------------------------------------------------------------- #
+generate_rotation_sequence(x, y, z, out_dir=out_dir_td, steps_per_transition=45,
+                           save=save)
+
+# ---------------------------------------------------------------------------- #
+# ---------------------------------------------------------------------------- #
+# N
+dmi = xr.open_dataset(dates_dir + 'DMI_SON_Leads_r_CFSv2.nc')
+ep = xr.open_dataset(dates_dir_n + 'EP_n_SON_Leads_r_CFSv2.nc')
+cp = xr.open_dataset(dates_dir_n + 'CP_n_SON_Leads_r_CFSv2.nc')
+
+x = dmi.stack(time2=('time', 'r')).sst.values/dmi.std(['r', 'time']).sst.values
+y = ep.stack(time2=('time', 'r')).sst.values/ep.std(['r', 'time']).sst.values
+z = cp.stack(time2=('time', 'r')).sst.values/cp.std(['r', 'time']).sst.values
+
+# ---------------------------------------------------------------------------- #
+generate_rotation_sequence(x, y, z, out_dir=out_dir_n, steps_per_transition=45,
+                           save=save)
+
+print('# --------------------------------------------------------------------#')
+print('# --------------------------------------------------------------------#')
+print('done')
+print('# --------------------------------------------------------------------#')
+
+
+
