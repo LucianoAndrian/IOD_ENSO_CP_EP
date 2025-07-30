@@ -2,7 +2,7 @@
 Composites
 """
 # ---------------------------------------------------------------------------- #
-save = False
+save = True
 out_dir = '/home/luciano.andrian/doc/IOD_ENSO_CP_EP/salidas/'
 cases_fields = '/pikachu/datos/luciano.andrian/cases_fields_EP_CP/'
 
@@ -304,7 +304,7 @@ if plot_td:
                 ocean_mask = False
                 high = 1.3
 
-            name_fig = f'comp_{v}_{f}'
+            name_fig = f'comp_Td_{v}_{f}'
             PlotFinal(data=cases_ordenados, levels=scale, cmap=cbar,
                       titles=titles, namefig=name_fig, map=map,
                       save=save, dpi=dpi, out_dir=out_dir,
@@ -357,7 +357,7 @@ if plot_td:
                 ocean_mask = False
                 high = 1.3
 
-            name_fig = f'comp_{v}_{f}'
+            name_fig = f'comp_n_{v}_{f}'
             PlotFinal(data=cases_ordenados, levels=scale, cmap=cbar,
                       titles=titles, namefig=name_fig, map=map,
                       save=save, dpi=dpi, out_dir=out_dir,
