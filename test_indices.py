@@ -192,7 +192,7 @@ n34_or = Nino34CPC(xr.open_dataset(
     "/pikachu/datos/luciano.andrian/verif_2019_2023/sst.mnmean.nc"),
     start=1920, end=2020)[0]
 
-year_start = 1958
+year_start = 1940
 year_end = 2021
 
 n34 = n34_or.sel(time=slice(f'{year_start}-08-01', f'{year_end}-04-01'))
