@@ -192,8 +192,8 @@ n34_or = Nino34CPC(xr.open_dataset(
     "/pikachu/datos/luciano.andrian/verif_2019_2023/sst.mnmean.nc"),
     start=1920, end=2020)[0]
 
-year_start = 1940
-year_end = 2021
+year_start = 1959
+year_end = 2020
 
 n34 = n34_or.sel(time=slice(f'{year_start}-08-01', f'{year_end}-04-01'))
 
@@ -202,7 +202,7 @@ n34_son = n34.sel(time=n34.time.dt.month.isin(10))
 sst_or = xr.open_dataset(
     "/pikachu/datos/luciano.andrian/verif_2019_2023/sst.mnmean.nc")
 sst_or = sst_or.drop_dims('nbnds')
-sst_or = sst_or.sel(time=slice(f'{year_start}-08-01', f'{year_end}-04-01'))
+sst_or = sst_or.sel(time=slice(f'{year_start}-01-01', f'{year_end}-12-01'))
 sst_or = sst_or.rename({'sst':'var'})
 
 sst = xrFieldTimeDetrend(sst_or, 'time') # Detrend
