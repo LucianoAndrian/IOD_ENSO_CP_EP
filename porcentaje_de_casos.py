@@ -63,19 +63,19 @@ variables = ['dmi', 'ep', 'cp']
 
 # Tk
 Compute(variables, ds1=dmi, ds2=ep_tk, ds3=cp_tk, out_dir=temporal_out_dir,
-        prefix='OBS', save=True, thr=0.75)
+        prefix='OBS', save=True, thr=0.5)
 porcentaje_tk = Porcentaje(total_obs, temporal_out_dir, 'OBS_')
 porcentaje_tk.to_csv(f'{out_dir}porcentaje_tk.txt', sep='\t', index=True)
 
 # Td
 Compute(variables, ds1=dmi, ds2=ep_td, ds3=cp_td, out_dir=temporal_out_dir,
-        prefix='OBS', save=True, thr=0.75)
+        prefix='OBS', save=True, thr=0.5)
 porcentaje_td = Porcentaje(total_obs, temporal_out_dir, 'OBS_')
 porcentaje_td.to_csv(f'{out_dir}porcentaje_td.txt', sep='\t', index=True)
 
 # n
 Compute(variables, ds1=dmi, ds2=ep_n, ds3=cp_n, out_dir=temporal_out_dir,
-        prefix='OBS', save=True, thr=0.75)
+        prefix='OBS', save=True, thr=0.5)
 porcentaje_n = Porcentaje(total_obs, temporal_out_dir, 'OBS_')
 porcentaje_n.to_csv(f'{out_dir}porcentaje_n.txt', sep='\t', index=True)
 
