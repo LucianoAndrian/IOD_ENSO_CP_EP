@@ -2,7 +2,7 @@
 Composites
 """
 # ---------------------------------------------------------------------------- #
-save = True
+save = False
 out_dir = '/home/luciano.andrian/doc/IOD_ENSO_CP_EP/salidas/'
 cases_fields = '/pikachu/datos/luciano.andrian/cases_fields_EP_CP/'
 
@@ -214,7 +214,7 @@ scale_pp = np.array([-45, -30, -20, -10, -2.5, 0, 2.5, 10, 20, 30, 45])
 scale_t = [-1, -0.8, -0.4, -0.2, -0.1, 0, 0.1, 0.2, 0.4, 0.8, 1]
 aux_scale_hgt = [-100, -50, -30, -15, -5, 5, 15, 30, 50, 100]
 aux_scale_hgt200 = [-150, -100, -50, -25, -10, 10, 25, 50, 100, 150]
-variables = ['sst', 'tref', 'prec', 'hgt']
+variables = ['sst2', 'tref', 'prec', 'hgt']
 aux_scales = [scale_t, scale_t, scale_pp, aux_scale_hgt200]
 aux_cbar = [cbar, cbar, cbar_pp, cbar]
 

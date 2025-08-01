@@ -330,7 +330,7 @@ def RegreField(field, index, return_coef=False):
     return result
 # ---------------------------------------------------------------------------- #
 
-sst = xr.open_dataset('/pikachu/datos/luciano.andrian/cases_fields/sst_son.nc')
+sst = xr.open_dataset('/pikachu/datos/luciano.andrian/cases_fields/sst2_son.nc')
 
 # Takahashi et al. 2011 ------------------------------------------------------ #
 sst_sel = sst.sel(lon=slice(110,290), lat=slice(-10,10))
