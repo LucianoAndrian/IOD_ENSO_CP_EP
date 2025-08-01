@@ -159,4 +159,4 @@ son_rt_detrend = Anom_Detrend_SeasonRealTime(data, son_clim_99_11, 10)
 son_total = xr.concat([son_hindcast_detrend, son_rt_detrend], dim='time')
 
 # save totals -----------------------------------------------------------------#
-son_total.to_netcdf('/pikachu/datos/luciano.andrian/cases_fields/sst_son_2.nc')
+son_total.to_netcdf('/pikachu/datos/luciano.andrian/cases_fields/sst2_son.nc')
