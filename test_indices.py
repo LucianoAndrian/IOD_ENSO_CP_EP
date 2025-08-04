@@ -7,6 +7,7 @@ Sulivan et al. 2016
 # ---------------------------------------------------------------------------- #
 plots = False
 save = False
+save_plots = False
 our_dir =  '/home/luciano.andrian/doc/IOD_ENSO_CP_EP/salidas/index_regre/'
 # ---------------------------------------------------------------------------- #
 from eofs.xarray import Eof
@@ -247,9 +248,12 @@ if plots:
     # PlotOne(pc1_reg_tk, levels=levels)
     # PlotOne(pc2_reg_tk, levels=levels)
     PlotOne(cp_reg_tk, levels=levels,
-            title='Regression Coef. CP ENSO - Takahashi et al. 2011')
+            title='Regression Coef. CP ENSO - Takahashi et al. 2011',
+            name_fig='cp_tk_obs', out_dir=our_dir, save=save_plots)
+
     PlotOne(ep_reg_tk, levels=levels,
-            title='Regression Coef. EP ENSO - Takahashi et al. 2011')
+            title='Regression Coef. EP ENSO - Takahashi et al. 2011',
+            name_fig='ep_tk_obs', out_dir=our_dir, save=save_plots)
 
     PlotTimeSeries(serie1=n34_son, serie2=cp_tk, serie3=ep_tk,
                    label1='ONI', label2='CP', label3='EP',
@@ -267,9 +271,11 @@ if plots:
     cp_reg_td = RegreField(sst, cp_td, return_coef=True)
     ep_reg_td = RegreField(sst, ep_td, return_coef=True)
     PlotOne(cp_reg_td, levels=levels,
-            title='Regression Coef. CP ENSO - Tedeschi et al. 2014')
+            title='Regression Coef. CP ENSO - Tedeschi et al. 2014',
+            name_fig='cp_td_obs', out_dir=our_dir, save=save_plots)
     PlotOne(ep_reg_td, levels=levels,
-            title='Regression Coef. EP ENSO - Tedeschi et al. 2014')
+            title='Regression Coef. EP ENSO - Tedeschi et al. 2014',
+            name_fig='ep_td_obs', out_dir=our_dir, save=save_plots)
 
 # Sulivan et al. 2016 -------------------------------------------------------- #
 n3 = sst.sel(lon=slice(210, 270), lat=slice(5,-5)).mean(['lon', 'lat'])['var']
@@ -291,9 +297,12 @@ if plots:
     cp_reg_n = RegreField(sst, cp_n, return_coef=True)
     ep_reg_n = RegreField(sst, ep_n, return_coef=True)
     PlotOne(cp_reg_n, levels=levels,
-            title='Regression Coef. CP ENSO - Sulivan et al. 2016')
+            title='Regression Coef. CP ENSO - Sulivan et al. 2016',
+            name_fig='cp_n_obs', out_dir=our_dir, save=save_plots)
+
     PlotOne(ep_reg_n, levels=levels,
-            title='Regression Coef. EP ENSO - Sulivan et al. 2016')
+            title='Regression Coef. EP ENSO - Sulivan et al. 2016',
+            name_fig='ep_n_obs', out_dir=our_dir, save=save_plots)
 
 # ---------------------------------------------------------------------------- #
 # ---------------------------------------------------------------------------- #
