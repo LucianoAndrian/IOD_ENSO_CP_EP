@@ -188,6 +188,35 @@ def find_top_events(index, num_of_events):
     neg = index.sortby(index, ascending=True).isel(time=slice(num_of_events))
 
     return pos, neg
+
+def PlotScatter(idx1, idx2, idx1_name, idx2_name, save=save,
+                out_dir='out_dir',  name_fig='fig', dpi=dpi):
+
+    in_label_size = 13
+    label_legend_size = 12
+    tick_label_size = 11
+    scatter_size_fix = 3
+    fig, ax = plt.subplots(dpi=dpi, figsize=(7.08661, 7.08661))
+
+    # todos
+    ax.scatter(x=idx1, y=idx2, marker='x',
+               s=5 * scatter_size_fix, edgecolor='k', color='k', alpha=0.8)
+
+    ax.legend(loc=(.01, .57), fontsize=label_legend_size)
+    ax.tick_params(axis='both', which='major', labelsize=tick_label_size, pad=1)
+    ax.set_ylim((-3, 3))
+    ax.set_xlim((-3, 3))
+    ax.set_xlabel(f'{idx1_name}', size=in_label_size)
+    ax.set_ylabel(f'{idx2_name}', size=in_label_size)
+    plt.grid()
+    plt.tight_layout()
+    plt.title(f'{idx1_name}-{idx2_name}')
+
+    if save:
+        plt.savefig(f'{out_dir}{name_fig}.png', dpi=dpi, bbox_inches='tight')
+        plt.close('all')
+    else:
+        plt.show()
 # ---------------------------------------------------------------------------- #
 n34_or = Nino34CPC(xr.open_dataset(
     "/pikachu/datos/luciano.andrian/verif_2019_2023/sst.mnmean.nc"),
@@ -233,6 +262,10 @@ if plots:
     print(f'var exp {var_per[0]}%')
     PlotTimeSeries(serie1=n34_son, serie2=pc1, serie3=pc2,
                    label1='ONI', label2='pc1', label3='pc2', title='')
+
+    PlotScatter(idx1=pc1, idx2=pc2, idx1_name='PC1', idx2_name='PC2',
+                save=False, out_dir='/',
+                name_fig='scatter_pc1-pc2_obs', dpi=dpi)
 
 cp_tk = (pc1 + pc2)/np.sqrt(2)
 ep_tk = (pc1 - pc2)/np.sqrt(2)
