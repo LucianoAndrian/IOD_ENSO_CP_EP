@@ -216,5 +216,46 @@ PlotPDFTable(df=porcentajes_diff, cmap=cbar_bins2d,
              title='diff % cfsv2-obs', name_fig='porcentajes_diff',
              save=save, out_dir=out_dir, color_thr=100,
              figsize=(4.5,6))
+
+omit = [13,14,15,16,17,18,21, 22, 23, 24, 25, 26]
+filas = [[1,7],[7,13],[13,19],[19,21], [21,100], [0,100], omit]
+
+sum_abs = []
+porcentajes_abs = np.abs(porcentajes_diff)
+for cf, f in enumerate(filas):
+    if cf < 6:
+        sum_abs.append(porcentajes_abs[f[0]:f[1]].sum())
+    else:
+        sum_abs.append(porcentajes_abs.drop(porcentajes_abs.index[omit]).sum())
+
+porcentajes_sum_abs = pd.DataFrame(sum_abs)
+porcentajes_sum_abs.index = ['Puros', 'dobles', 'dobles_op', 'triples', \
+                             'triples_op', 'todo', 'todo_sin_op']
+
+PlotPDFTable(df=porcentajes_sum_abs, cmap=cbar,
+             levels=np.linspace(0, 60, 11),
+             title='Suma de diferencias absolutas',
+             name_fig='porcentajes_diff_abs_por_categorias',
+             save=save, out_dir=out_dir,
+             color_thr=100, figsize=(6,6))
+
+# SD ------------------------------------------------------------------------- #
+sds = []
+for cf, f in enumerate(filas):
+    if cf < 6:
+        sds.append(porcentajes[f[0]:f[1]].std())
+    else:
+        sds.append(porcentajes.drop(porcentajes.index[omit]).std())
+
+porcentajes_sd = pd.DataFrame(sds)
+porcentajes_sd.index = ['Puros', 'dobles', 'dobles_op', 'triples', \
+                        'triples_op', 'todo', 'todo_sin_op']
+
+PlotPDFTable(df=porcentajes_sd, cmap=cbar,
+             levels=np.linspace(0, 5, 11),
+             title='SD %', name_fig='porcentajes_sd_por_categorias',
+             save=save, out_dir=out_dir,
+             color_thr=100, figsize=(6,6))
+
 # ---------------------------------------------------------------------------- #
 # ---------------------------------------------------------------------------- #
