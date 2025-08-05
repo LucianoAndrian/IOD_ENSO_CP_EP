@@ -328,6 +328,36 @@ def RegreField(field, index, return_coef=False):
         result = fitted
 
     return result
+
+def PlotScatter(idx1, idx2, idx1_name, idx2_name, save=save,
+                out_dir=out_dir,  name_fig='fig', dpi=dpi):
+
+    in_label_size = 13
+    label_legend_size = 12
+    tick_label_size = 11
+    scatter_size_fix = 3
+    fig, ax = plt.subplots(dpi=dpi, figsize=(7.08661, 7.08661))
+
+    # todos
+    ax.scatter(x=idx1, y=idx2, marker='x',
+               s=5 * scatter_size_fix, edgecolor='k', color='k', alpha=0.8)
+
+    ax.legend(loc=(.01, .57), fontsize=label_legend_size)
+    ax.tick_params(axis='both', which='major', labelsize=tick_label_size, pad=1)
+    ax.set_ylim((-3, 3))
+    ax.set_xlim((-3, 3))
+    ax.set_xlabel(f'{idx1_name}', size=in_label_size)
+    ax.set_ylabel(f'{idx2_name}', size=in_label_size)
+    plt.grid()
+    plt.tight_layout()
+    plt.title(f'{idx1_name}-{idx2_name}')
+
+    if save:
+        plt.savefig(f'{out_dir}{name_fig}.png', dpi=dpi, bbox_inches='tight')
+        plt.close('all')
+    else:
+        plt.show()
+
 # ---------------------------------------------------------------------------- #
 
 sst = xr.open_dataset('/pikachu/datos/luciano.andrian/cases_fields/sst2_son.nc')
@@ -346,6 +376,10 @@ else:
     # En algunos leads el oef puede tener signo cambiado
     # Acomodo los signos de cada pc en funcion del EOF
     pc1_ch, pc2_ch = CheckSign(eof_f_r, pc1_f_r, pc2_f_r)
+
+PlotScatter(idx1=pc1_ch, idx2=pc2_ch, idx1_name='PC1', idx2_name='PC2',
+            save=save_plots, out_dir=out_dir,
+            name_fig='scatter_pc1-pc2_cfsv2', dpi=dpi)
 
 cp = (pc1_ch + pc2_ch)/np.sqrt(2)
 cp = cp.to_dataset(name='sst')
