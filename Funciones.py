@@ -4257,7 +4257,7 @@ def pdf_fit_normal(data, size, start, end):
 
     return pdf
 
-def PDF_cases(variable, season, box_lons, box_lats, box_name,
+def PDF_cases(variable, box_lons, box_lats, box_name,
               cases, cases_dir):
 
     if variable == 'prec':
@@ -4269,7 +4269,7 @@ def PDF_cases(variable, season, box_lons, box_lats, box_name,
 
     # climatologia
     neutro = xr.open_dataset(
-        f'{cases_dir}{variable}_neutros_{season}_detrend_05.nc')
+        f'{cases_dir}{variable}_neutros_SON.nc')
     neutro = neutro.rename({list(neutro.data_vars)[0]: 'var'})
     neutro = neutro * fix_factor
 
@@ -4293,8 +4293,6 @@ def PDF_cases(variable, season, box_lons, box_lats, box_name,
         else:
             startend = -2
 
-
-
         aux_clim = clim - clim.mean('time')
         aux_clim = np.nan_to_num(aux_clim['var'].values)
 
@@ -4305,7 +4303,7 @@ def PDF_cases(variable, season, box_lons, box_lats, box_name,
 
         for c_count, c in enumerate(cases):
             case = xr.open_dataset(
-                f'{cases_dir}{variable}_{c}_{season}_detrend_05.nc')
+                f'{cases_dir}{variable}_{c}_SON.nc')
             case = case.rename({list(case.data_vars)[0]: 'var'})
             case = case * fix_factor
             mask_ocean = MakeMask(case, list(case.data_vars)[0])
@@ -4459,9 +4457,10 @@ def js_divergence(p: pd.Series, q: pd.Series) -> float:
     return jensenshannon(p_norm, q_norm, base=2)**2
 
 def PlotPDFTable(df, cmap, levels, title, name_fig='fig',
-                 save=False, out_dir='~/', dpi=100, color_thr=0.4):
+                 save=False, out_dir='~/', dpi=100, color_thr=0.4,
+                 figsize=(8, 4)):
 
-    fig = plt.figure(dpi=dpi, figsize=(8, 4))
+    fig = plt.figure(dpi=dpi, figsize=figsize)
     ax = fig.add_subplot(111)
     norm = BoundaryNorm(levels, cmap.N, clip=True)
 
