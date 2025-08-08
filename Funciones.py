@@ -6,6 +6,8 @@ from itertools import groupby
 import xarray as xr
 import numpy as np
 import pandas as pd
+from pandas.io.common import file_exists
+
 pd.options.mode.chained_assignment = None
 import statsmodels.formula.api as sm
 import statsmodels.formula.api as smf
@@ -4458,7 +4460,7 @@ def js_divergence(p: pd.Series, q: pd.Series) -> float:
 
 def PlotPDFTable(df, cmap, levels, title, name_fig='fig',
                  save=False, out_dir='~/', dpi=100, color_thr=0.4,
-                 figsize=(8, 4)):
+                 figsize=(8, 4), pdf=True):
 
     fig = plt.figure(dpi=dpi, figsize=figsize)
     ax = fig.add_subplot(111)
@@ -4494,8 +4496,13 @@ def PlotPDFTable(df, cmap, levels, title, name_fig='fig',
     ax.margins(0)
     plt.tight_layout()
 
+    if pdf is True:
+        file_extention = 'pdf'
+    else:
+        file_extention = 'png'
+
     if save:
-        plt.savefig(f"{out_dir}{name_fig}.pdf", dpi=dpi, bbox_inches='tight')
+        plt.savefig(f"{out_dir}{name_fig}.{file_extention}", dpi=dpi, bbox_inches='tight')
         plt.close()
     else:
         plt.show()

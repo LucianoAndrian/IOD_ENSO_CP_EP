@@ -116,7 +116,8 @@ for v, v_cbar in zip(['tref', 'prec'], [cbar_bins2d, cbar_pp_bins2d]):
                  save=save, name_fig=f'pdf_table_{v}',
                  out_dir=out_dir, dpi=dpi,
                  color_thr=0.5,
-                 figsize=(8,6))
+                 figsize=(8,6),
+                 pdf=False)
 
 print(' --------------------------------------------------------------------- ')
 print('Done')
