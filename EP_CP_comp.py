@@ -28,6 +28,9 @@ data_dir = '/pikachu/datos/luciano.andrian/observado/ncfiles/ERA5/1940_2020/'
 nc_date_dir = '/pikachu/datos/luciano.andrian/observado/ncfiles/' \
               'nc_composites_dates_no_ind_sst_anom/'
 
+cfsv2_cases_dates = '/pikachu/datos/luciano.andrian/cases_dates_EP_CP/'
+cfsv2_cases_fields = '/pikachu/datos/luciano.andrian/cases_fields_EP_CP/'
+
 if save:
     dpi=300
 else:
@@ -73,6 +76,20 @@ def OpenSetCases(cases, dir):
         cases_select = cases_select[0]
     return cases_select.time
 
+def OpenSetCasesFields(cases, dir, fix):
+    cases_select = []
+    nums = []
+    for c in cases:
+        data = xr.open_dataset(f'{dir}{c}')*fix
+        nums.append(len(data.time))
+        cases_select.append(data)
+
+    if len(cases_select) > 1:
+        cases_select = xr.concat(cases_select, dim='time')
+    else:
+        cases_select = cases_select[0]
+    return cases_select.mean('time'), np.sum(nums)
+
 def CompositeSimple(original_data, index):
 
     if len(index) != 0:
@@ -87,7 +104,7 @@ def CompositeSimple(original_data, index):
     else:
         print(' len index = 0')
 
-# ---------------------------------------------------------------------------- #
+# Obs ------------------------------------------------------------------------ #
 from test_indices import cp_tk, ep_tk, cp_td, ep_td, cp_n, ep_n, \
         year_start, year_end
 
@@ -192,6 +209,79 @@ for v, dir, scale, cbar in zip(variables, dirs, aux_scales, aux_cbar):
     comps = xr.concat(comps, dim='plots')
 
     name_fig = f'EP_CP_comp_{v.split("_")[0]}'
+    PlotFinal(data=comps, levels=scale, cmap=cbar,
+              titles=titles, namefig=name_fig, map=map,
+              save=save, dpi=dpi, out_dir=out_dir,
+              data_ctn=data_ctn, color_ctn='k', high=3, width=4,
+              num_cases=True, num_cases_data=nums, num_cols=2,
+              ocean_mask=ocean_mask, pdf=False, levels_ctn=levels_ctn,
+              data_ctn_no_ocean_mask=True, step=1)
+
+
+# CFSv2 ---------------------------------------------------------------------- #
+files = os.listdir(cfsv2_cases_fields)
+files = [f for f in files if '.nc' in f]
+
+titles = ['EP positivos', 'CP positivos', 'EP negativos', 'CP negativos']
+variables = ['tref', 'prec']
+for v, scale, cbar in zip(variables, aux_scales, aux_cbar):
+
+    if 'prec' in v:
+        fix = 30
+        map = 'sa'
+        ocean_mask = True
+        data_ctn = None
+        levels_ctn = None
+    elif 'tref' in v or 'sst' in v:
+        fix = 1
+        map = 'sa'
+        ocean_mask = True
+        data_ctn = None
+        levels_ctn = None
+    else:
+        fix = 9.8
+
+    cases_neutros = [f'{v}_neutros_SON.nc', f'{v}_puros_dmi_pos_SON.nc',
+                     f'{v}_puros_dmi_neg_SON.nc']
+
+    # Neutros
+    neutros, _ = OpenSetCasesFields(cases_neutros, cfsv2_cases_fields, fix)
+
+    files_v = [f for f in files if v in f]
+
+    # EP
+    cases_pos, cases_neg = SelectCase(files_v, index='ep', index_out='cp')
+    ep_pos_cases, num_ep_pos = OpenSetCasesFields(cases_pos,
+                                                    cfsv2_cases_fields, fix)
+    ep_neg_cases, num_ep_neg = OpenSetCasesFields(cases_neg,
+                                                  cfsv2_cases_fields, fix)
+
+    # CP
+    cases_pos, cases_neg = SelectCase(files_v, index='cp', index_out='ep')
+    cp_pos_cases, num_cp_pos = OpenSetCasesFields(cases_pos,
+                                                  cfsv2_cases_fields, fix)
+    cp_neg_cases, num_cp_neg = OpenSetCasesFields(cases_neg,
+                                                  cfsv2_cases_fields, fix)
+
+    comps = []
+    nums = []
+    comps.append(ep_pos_cases - neutros)
+    nums.append(num_ep_pos)
+
+    comps.append(cp_pos_cases - neutros)
+    nums.append(num_cp_pos)
+
+    comps.append(cp_neg_cases - neutros)
+    nums.append(num_cp_neg)
+
+    comps.append(ep_neg_cases - neutros)
+    nums.append(num_ep_neg)
+
+    comps = xr.concat(comps, dim='plots')
+    comps = comps.rename({v:'var'})
+
+    # Plots
+    name_fig = f'EP_CP_comp_{v.split("_")[0]}_CFSv2'
     PlotFinal(data=comps, levels=scale, cmap=cbar,
               titles=titles, namefig=name_fig, map=map,
               save=save, dpi=dpi, out_dir=out_dir,
