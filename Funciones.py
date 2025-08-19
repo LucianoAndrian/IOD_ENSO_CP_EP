@@ -4966,6 +4966,13 @@ def spearman_correlation(da_field, da_series):
 
     return result
 
+# ---------------------------------------------------------------------------- #
+def open_and_load(path):
+    ds = xr.open_dataset(path, engine='netcdf4')  # backend explícito
+    ds_loaded = ds.load()  # carga a memoria
+    ds.close()             # cierra archivo en disco
+    return ds_loaded
+
 ################################################################################
 ################################################################################
 

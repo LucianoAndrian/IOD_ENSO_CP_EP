@@ -4,6 +4,7 @@ Selección y clasificación de los eventos IOD y ENSO EP y CP
 # ---------------------------------------------------------------------------- #
 import xarray as xr
 import numpy as np
+from Funciones import open_and_load
 import os
 os.environ['HDF5_USE_FILE_LOCKING'] = 'FALSE'
 
@@ -182,7 +183,7 @@ def ClasificarEventos_OBS(ds1, ds2, ds3, variables, thr=0.5):
     return eventos
 
 def OpenAndSetIndice(dates_dir, name_file):
-    indice = xr.open_dataset(dates_dir + name_file)
+    indice = open_and_load(dates_dir + name_file)
     indice_std = indice.std('time')
     indice = indice/indice_std
     return indice
