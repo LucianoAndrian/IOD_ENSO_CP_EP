@@ -29,6 +29,7 @@ import matplotlib.patches as mpatches
 from scipy.integrate import trapz
 from matplotlib.colors import BoundaryNorm
 from scipy.stats import spearmanr
+import matplotlib.colors as mcolors
 
 os.environ['HDF5_USE_FILE_LOCKING'] = 'FALSE'
 import glob
@@ -4972,6 +4973,18 @@ def open_and_load(path):
     ds_loaded = ds.load()  # carga a memoria
     ds.close()             # cierra archivo en disco
     return ds_loaded
+
+# ---------------------------------------------------------------------------- #
+
+def DarkenColor(color, dc=0.2, as_hex=True):
+    amount = 1 - dc
+    try:
+        c = mcolors.cnames[color]
+    except KeyError:
+        c = color
+    r, g, b = mcolors.to_rgb(c)
+    new_rgb = (r * amount, g * amount, b * amount)
+    return mcolors.to_hex(new_rgb) if as_hex else new_rgb
 
 ################################################################################
 ################################################################################
