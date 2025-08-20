@@ -1,0 +1,177 @@
+"""
+Regresion total y parcial de EP y CP observado
+No se tiene en cuenta el IOD
+"""
+# ---------------------------------------------------------------------------- #
+save = False
+out_dir = '/home/luciano.andrian/doc/IOD_ENSO_CP_EP/salidas/'
+# ---------------------------------------------------------------------------- #
+import xarray as xr
+import numpy as np
+from Funciones import ComputeWithEffect, ComputeWithoutEffect, \
+    SetDataToPlotFinal, PlotFinalTwoVariables
+import os
+os.environ['HDF5_USE_FILE_LOCKING'] = 'FALSE'
+import warnings
+warnings.filterwarnings( "ignore", module = "matplotlib\..*" )
+from shapely.errors import ShapelyDeprecationWarning
+warnings.filterwarnings("ignore", category=ShapelyDeprecationWarning)
+warnings.filterwarnings("ignore")
+from matplotlib import colors
+
+if save:
+    dpi = 300
+else:
+    dpi = 100
+# ---------------------------------------------------------------------------- #
+data_dir_t_pp = '/pikachu/datos/luciano.andrian/observado/ncfiles/' \
+                'data_obs_d_w_c/' #T y PP ya procesados
+data_dir = '/pikachu/datos/luciano.andrian/observado/ncfiles/ERA5/1940_2020/'
+
+# ---------------------------------------------------------------------------- #
+def set_data(data, lats=None, lons=None, year_start=1940, year_end=2020):
+    if lats is not None and len(data.sel(lat=slice(lats[0], lats[-1])).lat) > 0:
+        data = data.sel(lat=slice(lats[0], lats[-1]))
+    else:
+        data = data.sel(lat=slice(lats[-1], lats[0]))
+
+    if lons is not None:
+        data = data.sel(lon=slice(lons[0], lons[-1]))
+
+    if year_start is not None and year_end is not None:
+        data = data.sel(time=data.time.dt.year.isin(np.arange(year_start, year_end+1)))
+
+    return data, data.time
+
+def set_and_rename(*args):
+    dataset = []
+    for arg in args:
+        arg = arg.to_dataset(name='var')
+        dataset.append(arg)
+
+    return tuple(dataset)
+
+def compute_partial_regre(data,index1, index2):
+    data_index1, data_corr_index1, data_index2, data_corr_index2, _, _, _, _ = \
+        ComputeWithEffect(data=data, data2=None,
+                          n34=index1.sel(time=index1.time.dt.month.isin(10)),
+                          dmi=index2.sel(time=index2.time.dt.month.isin(10)),
+                          two_variables=False, m=10, full_season=False,
+                          time_original=time_original)
+
+    data_index1_woindex2, data_corr_index1_woindex2, data_index2_woindex1, \
+        data_corr_index2_woindex1 = ComputeWithoutEffect(
+        data=data,
+        n34=index1.sel(time=index1.time.dt.month.isin(10)),
+        dmi= index2.sel(time=index2.time.dt.month.isin(10)),
+        m=10, time_original=time_original)
+
+    data_index1, data_corr_index1, data_index2, data_corr_index2, \
+        data_index1_woindex2, data_corr_index1_woindex2, \
+        data_index2_woindex1, data_corr_index2_woindex1 = set_and_rename(
+        data_index1, data_corr_index1, data_index2, data_corr_index2,
+        data_index1_woindex2, data_corr_index1_woindex2,
+        data_index2_woindex1, data_corr_index2_woindex1)
+
+    return (data_index1, data_corr_index1, data_index2, data_corr_index2,
+            data_index1_woindex2, data_corr_index1_woindex2,
+            data_index2_woindex1, data_corr_index2_woindex1)
+
+def MakerMaskSig(data, r_crit):
+    mask_sig = data.where((data < -1 * r_crit) | (data > r_crit))
+    mask_sig = mask_sig.where(np.isnan(mask_sig), 1)
+
+    return mask_sig
+# ---------------------------------------------------------------------------- #
+from test_indices import cp_tk, ep_tk, cp_td, ep_td, cp_n, ep_n, \
+        year_start, year_end
+
+
+
+
+scale_pp = np.array([-45, -30, -20, -10, -2.5, 0, 2.5, 10, 20, 30, 45])
+scale_t = [-1, -0.8, -0.4, -0.2, -0.1, 0, 0.1, 0.2, 0.4, 0.8, 1]
+
+
+cbar = colors.ListedColormap([
+                                 '#641B00', '#892300', '#9B1C00', '#B9391B',
+                                 '#CD4838', '#E25E55',
+                                 '#F28C89', '#FFCECC', '#FFE6E6', 'white',
+                                 '#E6F2FF', '#B3DBFF',
+                                 '#83B9EB', '#5E9AD7', '#3C7DC3', '#2064AF',
+                                 '#014A9B', '#013A75',
+                                 '#012A52'
+                             ][::-1])
+
+cbar.set_over('#4A1500')
+cbar.set_under('#001F3F')
+cbar.set_bad(color='white')
+
+
+
+cbar_pp = colors.ListedColormap(['#003C30', '#004C42', '#0C7169', '#79C8BC',
+                                 '#B4E2DB',
+                                 'white',
+                                '#F1DFB3', '#DCBC75', '#995D13', '#6A3D07',
+                                 '#543005', ][::-1])
+cbar_pp.set_under('#3F2404')
+cbar_pp.set_over('#00221A')
+cbar_pp.set_bad(color='white')
+print('Prec y Tref --------------------------------------------------------- #')
+# pp
+prec = xr.open_dataset(f'{data_dir_t_pp}ppgpcc_w_c_d_1_SON.nc')
+prec, time_original = set_data(prec, lats=[20,-60], lons=[275, 330],
+                               year_start=year_start, year_end=year_end)
+# temp
+temp = xr.open_dataset(f'{data_dir_t_pp}tcru_w_c_d_0.25_SON.nc')
+temp, _ = set_data(temp, lats=[20,-60], lons=[275, 330],
+                               year_start=year_start, year_end=year_end)
+
+print('# Regresion --------------------------------------------------------- #')
+t_critic = 1.66  # es MUY similar (2 digitos) para ambos períodos
+r_crit = np.sqrt(1 / (((np.sqrt((year_end - year_start) - 2) / t_critic) ** 2) + 1))
+
+
+for ep, cp in zip([ep_tk, ep_td, ep_n], [cp_tk, cp_td, cp_n]):
+
+    prec_ep, prec_corr_ep, prec_cp, prec_corr_cp, prec_ep_wocp, \
+        prec_corr_ep_wocp, prec_cp_woep, prec_corr_cp_woep = \
+        compute_partial_regre(prec, ep, cp)
+
+    temp_ep, temp_corr_ep, temp_cp, temp_corr_cp, temp_ep_wocp, \
+        temp_corr_ep_wocp, temp_cp_woep, temp_corr_cp_woep = \
+        compute_partial_regre(temp, ep, cp)
+
+
+    aux_v = SetDataToPlotFinal(prec_ep, prec_ep_wocp,
+                               prec_cp, prec_cp_woep,
+                               temp_ep, temp_ep_wocp,
+                               temp_cp, temp_cp_woep)
+
+    aux_sig_v = SetDataToPlotFinal(
+        prec_ep * MakerMaskSig(prec_corr_ep, r_crit),
+        prec_ep_wocp * MakerMaskSig(prec_corr_ep_wocp, r_crit),
+        prec_cp * MakerMaskSig(prec_corr_cp, r_crit),
+        prec_cp_woep * MakerMaskSig(prec_corr_cp_woep, r_crit),
+        temp_ep * MakerMaskSig(temp_corr_ep, r_crit),
+        temp_ep_wocp * MakerMaskSig(temp_corr_ep_wocp, r_crit),
+        temp_cp * MakerMaskSig(temp_corr_cp, r_crit),
+        temp_cp_woep * MakerMaskSig(temp_corr_cp_woep, r_crit))
+
+    subtitulos_regre = [r"$EP$", r"$EP|_{CP}$", r"$CP$", r"$CP|_{EP}$",
+                        r"$EP$", r"$EP|_{CP}$", r"$CP$", r"$CP|_{EP}$"]
+
+    PlotFinalTwoVariables(data=aux_v, num_cols=4,
+                          levels_r1=scale_pp, cmap_r1=cbar_pp,
+                          levels_r2=scale_t, cmap_r2=cbar,
+                          data_ctn=None, levels_ctn_r1=None,
+                          levels_ctn_r2=None, color_ctn='k',
+                          titles=subtitulos_regre, namefig='regre_pp_t',
+                          save=save, dpi=dpi,
+                          out_dir=out_dir, pdf=True,
+                          high=2.5, width=7.7, step=1,
+                          ocean_mask=False, num_cases=False,
+                          num_cases_data=None,
+                          sig_points=aux_sig_v, hatches='...',
+                          data_ctn_no_ocean_mask=False)
+
