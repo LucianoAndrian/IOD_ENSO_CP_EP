@@ -18,6 +18,9 @@ from shapely.errors import ShapelyDeprecationWarning
 warnings.filterwarnings("ignore", category=ShapelyDeprecationWarning)
 warnings.filterwarnings("ignore")
 from matplotlib import colors
+import matplotlib.pyplot as plt
+from Funciones import PlotFinal
+
 
 if save:
     dpi = 300
@@ -82,13 +85,62 @@ def MakerMaskSig(data, r_crit):
     mask_sig = mask_sig.where(np.isnan(mask_sig), 1)
 
     return mask_sig
+
+
+def compute_regre(var1=None, var2=None, ep=None, cp=None, r_crit=1,
+                  var1_is_var3=False):
+    var1_ep, var1_corr_ep, var1_cp, var1_corr_cp, var1_ep_wocp, \
+        var1_corr_ep_wocp, var1_cp_woep, var1_corr_cp_woep = \
+        compute_partial_regre(var1, ep, cp)
+
+    if var2 is not None:
+        var2_ep, var2_corr_ep, var2_cp, var2_corr_cp, var2_ep_wocp, \
+            var2_corr_ep_wocp, var2_cp_woep, var2_corr_cp_woep = \
+            compute_partial_regre(var2, ep, cp)
+
+        aux_v = SetDataToPlotFinal(var1_ep, var1_ep_wocp,
+                                   var1_cp, var1_cp_woep,
+                                   var2_ep, var2_ep_wocp,
+                                   var2_cp, var2_cp_woep)
+
+        aux_sig_v = SetDataToPlotFinal(
+            var1_ep * MakerMaskSig(var1_corr_ep, r_crit),
+            var1_ep_wocp * MakerMaskSig(var1_corr_ep_wocp, r_crit),
+            var1_cp * MakerMaskSig(var1_corr_cp, r_crit),
+            var1_cp_woep * MakerMaskSig(var1_corr_cp_woep, r_crit),
+            var2_ep * MakerMaskSig(var2_corr_ep, r_crit),
+            var2_ep_wocp * MakerMaskSig(var2_corr_ep_wocp, r_crit),
+            var2_cp * MakerMaskSig(var2_corr_cp, r_crit),
+            var2_cp_woep * MakerMaskSig(var2_corr_cp_woep, r_crit))
+    else:
+        if var1_is_var3:
+            # Va doble para poder sumarlo al plot
+            aux_v = SetDataToPlotFinal(var1_ep, var1_ep_wocp,
+                                       var1_cp, var1_cp_woep,
+                                       var1_ep, var1_ep_wocp,
+                                       var1_cp, var1_cp_woep)
+
+            aux_sig_v = None
+
+        else:
+            aux_v = SetDataToPlotFinal(var1_ep, var1_ep_wocp,
+                                       var1_cp, var1_cp_woep)
+
+            aux_sig_v = SetDataToPlotFinal(
+                var1_ep * MakerMaskSig(var1_corr_ep, r_crit),
+                var1_ep_wocp * MakerMaskSig(var1_corr_ep_wocp, r_crit),
+                var1_cp * MakerMaskSig(var1_corr_cp, r_crit),
+                var1_cp_woep * MakerMaskSig(var1_corr_cp_woep, r_crit))
+
+    return aux_v, aux_sig_v
+
+
 # ---------------------------------------------------------------------------- #
 from test_indices import cp_tk, ep_tk, cp_td, ep_td, cp_n, ep_n, \
         year_start, year_end
 
-
-
-
+scale_hgt=[-300, -270, -240, -210, -180, -150, -120, -90, -60,
+ -30, 0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300]
 scale_pp = np.array([-45, -30, -20, -10, -2.5, 0, 2.5, 10, 20, 30, 45])
 scale_t = [-1, -0.8, -0.4, -0.2, -0.1, 0, 0.1, 0.2, 0.4, 0.8, 1]
 
@@ -127,45 +179,37 @@ temp = xr.open_dataset(f'{data_dir_t_pp}tcru_w_c_d_0.25_SON.nc')
 temp, _ = set_data(temp, lats=[20,-60], lons=[275, 330],
                                year_start=year_start, year_end=year_end)
 
+# hgt200
+data_hgt = xr.open_dataset(f'{data_dir}HGT200_SON_mer_d_w.nc')
+data_hgt = data_hgt.sel(time=data_hgt.time.dt.year.isin(
+    np.arange(year_start, year_end+1)))
+
 print('# Regresion --------------------------------------------------------- #')
 t_critic = 1.66  # es MUY similar (2 digitos) para ambos períodos
 r_crit = np.sqrt(1 / (((np.sqrt((year_end - year_start) - 2) / t_critic) ** 2) + 1))
 
-
 for ep, cp in zip([ep_tk, ep_td, ep_n], [cp_tk, cp_td, cp_n]):
 
-    prec_ep, prec_corr_ep, prec_cp, prec_corr_cp, prec_ep_wocp, \
-        prec_corr_ep_wocp, prec_cp_woep, prec_corr_cp_woep = \
-        compute_partial_regre(prec, ep, cp)
+    aux_v, aux_sig_v = compute_regre(var1=prec, var2=temp, ep=ep, cp=cp,
+                                     r_crit=r_crit, var1_is_var3=False)
 
-    temp_ep, temp_corr_ep, temp_cp, temp_corr_cp, temp_ep_wocp, \
-        temp_corr_ep_wocp, temp_cp_woep, temp_corr_cp_woep = \
-        compute_partial_regre(temp, ep, cp)
+    aux_ctn, _ = compute_regre(var1=data_hgt, var2=None, ep=ep, cp=cp,
+                               r_crit=r_crit,
+                               var1_is_var3=True)
 
+    aux_hgt, aux_sig_hgt = compute_regre(var1=data_hgt, var2=None, ep=ep, cp=cp,
+                                         r_crit=r_crit,
+                                         var1_is_var3=False)
 
-    aux_v = SetDataToPlotFinal(prec_ep, prec_ep_wocp,
-                               prec_cp, prec_cp_woep,
-                               temp_ep, temp_ep_wocp,
-                               temp_cp, temp_cp_woep)
-
-    aux_sig_v = SetDataToPlotFinal(
-        prec_ep * MakerMaskSig(prec_corr_ep, r_crit),
-        prec_ep_wocp * MakerMaskSig(prec_corr_ep_wocp, r_crit),
-        prec_cp * MakerMaskSig(prec_corr_cp, r_crit),
-        prec_cp_woep * MakerMaskSig(prec_corr_cp_woep, r_crit),
-        temp_ep * MakerMaskSig(temp_corr_ep, r_crit),
-        temp_ep_wocp * MakerMaskSig(temp_corr_ep_wocp, r_crit),
-        temp_cp * MakerMaskSig(temp_corr_cp, r_crit),
-        temp_cp_woep * MakerMaskSig(temp_corr_cp_woep, r_crit))
 
     subtitulos_regre = [r"$EP$", r"$EP|_{CP}$", r"$CP$", r"$CP|_{EP}$",
                         r"$EP$", r"$EP|_{CP}$", r"$CP$", r"$CP|_{EP}$"]
-
+    plt.rcParams['hatch.linewidth'] = 1
     PlotFinalTwoVariables(data=aux_v, num_cols=4,
                           levels_r1=scale_pp, cmap_r1=cbar_pp,
                           levels_r2=scale_t, cmap_r2=cbar,
-                          data_ctn=None, levels_ctn_r1=None,
-                          levels_ctn_r2=None, color_ctn='k',
+                          data_ctn=aux_ctn, levels_ctn_r1=scale_hgt,
+                          levels_ctn_r2=scale_hgt, color_ctn='k',
                           titles=subtitulos_regre, namefig='regre_pp_t',
                           save=save, dpi=dpi,
                           out_dir=out_dir, pdf=True,
@@ -174,4 +218,14 @@ for ep, cp in zip([ep_tk, ep_td, ep_n], [cp_tk, cp_td, cp_n]):
                           num_cases_data=None,
                           sig_points=aux_sig_v, hatches='...',
                           data_ctn_no_ocean_mask=False)
+
+    plt.rcParams['hatch.linewidth'] = 0.5
+    PlotFinal(data=aux_hgt, levels=scale_hgt, cmap=cbar,
+              titles=subtitulos_regre, namefig='regre_pp_t', map='hs',
+              save=save, dpi=dpi, out_dir=out_dir,
+              data_ctn=aux_hgt, color_ctn='k', high=1.2, width=6,
+              num_cases=False, num_cases_data=None, num_cols=2,
+              ocean_mask=False, pdf=False, levels_ctn=scale_hgt,
+              data_ctn_no_ocean_mask=False, step=1,
+              sig_points=aux_sig_hgt, hatches='...')
 

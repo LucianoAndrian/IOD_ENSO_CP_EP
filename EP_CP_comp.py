@@ -104,6 +104,52 @@ def CompositeSimple(original_data, index):
     else:
         print(' len index = 0')
 
+
+def composite_to_plot(v, fix, cfsv2_cases_fields=cfsv2_cases_fields):
+    cases_neutros = [f'{v}_neutros_SON.nc', f'{v}_puros_dmi_pos_SON.nc',
+                     f'{v}_puros_dmi_neg_SON.nc']
+
+    # Neutros
+    neutros, _ = OpenSetCasesFields(cases_neutros, cfsv2_cases_fields, fix)
+
+    if v == 'hgt':
+        v_aux = 'hgt_'
+    else:
+        v_aux = v
+    files_v = [f for f in files if v_aux in f]
+
+    # EP
+    cases_pos, cases_neg = SelectCase(files_v, index='ep', index_out='cp')
+    ep_pos_cases, num_ep_pos = OpenSetCasesFields(cases_pos,
+                                                  cfsv2_cases_fields, fix)
+    ep_neg_cases, num_ep_neg = OpenSetCasesFields(cases_neg,
+                                                  cfsv2_cases_fields, fix)
+
+    # CP
+    cases_pos, cases_neg = SelectCase(files_v, index='cp', index_out='ep')
+    cp_pos_cases, num_cp_pos = OpenSetCasesFields(cases_pos,
+                                                  cfsv2_cases_fields, fix)
+    cp_neg_cases, num_cp_neg = OpenSetCasesFields(cases_neg,
+                                                  cfsv2_cases_fields, fix)
+
+    comps = []
+    nums = []
+    comps.append(ep_pos_cases - neutros)
+    nums.append(num_ep_pos)
+
+    comps.append(cp_pos_cases - neutros)
+    nums.append(num_cp_pos)
+
+    comps.append(cp_neg_cases - neutros)
+    nums.append(num_cp_neg)
+
+    comps.append(ep_neg_cases - neutros)
+    nums.append(num_ep_neg)
+
+    comps = xr.concat(comps, dim='plots')
+    comps = comps.rename({v: 'var'})
+
+    return comps
 # Obs ------------------------------------------------------------------------ #
 from test_indices import cp_tk, ep_tk, cp_td, ep_td, cp_n, ep_n, \
         year_start, year_end
@@ -173,11 +219,11 @@ aux_scale_hgt = [-100, -50, -30, -15, -5, 5, 15, 30, 50, 100]
 aux_scale_hgt200 = [-150, -100, -50, -25, -10, 10, 25, 50, 100, 150]
 
 # Por ahora solo t y pp
-variables = ['tref', 'prec']
-aux_scales = [scale_t, scale_pp]
-aux_cbar = [ cbar, cbar_pp, ]
-dirs = [data_dir_t_pp, data_dir_t_pp]
-variables = ['tcru_w_c_d_0.25_SON', 'ppgpcc_w_c_d_1_SON']
+variables = ['tref', 'prec', 'hgt']
+aux_scales = [scale_t, scale_pp, aux_scale_hgt200]
+aux_cbar = [ cbar, cbar_pp, cbar]
+dirs = [data_dir_t_pp, data_dir_t_pp, data_dir]
+variables = ['tcru_w_c_d_0.25_SON', 'ppgpcc_w_c_d_1_SON', 'HGT200_SON_mer_d_w']
 map = 'sa'
 
 # Composites ----------------------------------------------------------------- #
@@ -193,29 +239,48 @@ for v, dir, scale, cbar in zip(variables, dirs, aux_scales, aux_cbar):
         data = OpenSetData(data)
         map = 'sa'
         ocean_mask = True
-        data_ctn = None
         levels_ctn = None
+        data_ctn_no_ocean_mask = True
+        high = 3
+        width = 4
+        data_hgt = xr.open_dataset(f'{data_dir}HGT200_SON_mer_d_w.nc')
+        data_ctn = data_hgt.sel(lon=slice(275, 330), lat=slice(20, -65))
+        levels_ctn = aux_scale_hgt200
+
+    else:
+        data_ctn = data
+        map='hs'
+        ocean_mask = False
+        data_ctn_no_ocean_mask = False
+        levels_ctn = scale
+        high = 1.2
+        width = 6
 
     neutro_comp, _ = CompositeSimple(data, neutros)
+    neutro_comp_ctn, _ = CompositeSimple(data_ctn, neutros)
 
     comps = []
+    comps_ctn = []
     nums = []
     for c in cases_ordenados:
         case_comp, num = CompositeSimple(data, c)
         comps.append(case_comp - neutro_comp)
-
         nums.append(num)
 
+        case_comp_ctn, num = CompositeSimple(data_ctn, c)
+        comps_ctn.append(case_comp_ctn - neutro_comp_ctn)
+
     comps = xr.concat(comps, dim='plots')
+    comps_ctn = xr.concat(comps_ctn, dim='plots')
 
     name_fig = f'EP_CP_comp_{v.split("_")[0]}'
     PlotFinal(data=comps, levels=scale, cmap=cbar,
               titles=titles, namefig=name_fig, map=map,
               save=save, dpi=dpi, out_dir=out_dir,
-              data_ctn=data_ctn, color_ctn='k', high=3, width=4,
+              data_ctn=comps_ctn, color_ctn='k', high=high, width=width,
               num_cases=True, num_cases_data=nums, num_cols=2,
               ocean_mask=ocean_mask, pdf=False, levels_ctn=levels_ctn,
-              data_ctn_no_ocean_mask=True, step=1)
+              data_ctn_no_ocean_mask=data_ctn_no_ocean_mask, step=1)
 
 
 # CFSv2 ---------------------------------------------------------------------- #
@@ -223,73 +288,49 @@ files = os.listdir(cfsv2_cases_fields)
 files = [f for f in files if '.nc' in f]
 
 titles = ['EP positivos', 'CP positivos', 'EP negativos', 'CP negativos']
-variables = ['tref', 'prec']
+variables = ['tref', 'prec', 'hgt']
 for v, scale, cbar in zip(variables, aux_scales, aux_cbar):
 
-    if 'prec' in v:
-        fix = 30
+
+    if 'prec' in v or 'tref' in v:
         map = 'sa'
+        high = 3
+        width = 4
         ocean_mask = True
-        data_ctn = None
-        levels_ctn = None
-    elif 'tref' in v or 'sst' in v:
-        fix = 1
-        map = 'sa'
-        ocean_mask = True
-        data_ctn = None
-        levels_ctn = None
-    else:
-        fix = 9.8
+        data_ctn_no_ocean_mask = True
+        levels_ctn = aux_scale_hgt200
 
-    cases_neutros = [f'{v}_neutros_SON.nc', f'{v}_puros_dmi_pos_SON.nc',
-                     f'{v}_puros_dmi_neg_SON.nc']
+        if 'prec' in v:
+            fix=30
+        else:
+            fix=1
 
-    # Neutros
-    neutros, _ = OpenSetCasesFields(cases_neutros, cfsv2_cases_fields, fix)
+        comps = composite_to_plot(v, fix)
+        data_ctn = composite_to_plot('hgt', 9.8)
 
-    files_v = [f for f in files if v in f]
+    elif 'hgt' in v:
+        map='hs'
+        fix=9.8
+        high = 1.2
+        width = 6
+        ocean_mask = False
+        data_ctn_no_ocean_mask = False
+        levels_ctn = scale
 
-    # EP
-    cases_pos, cases_neg = SelectCase(files_v, index='ep', index_out='cp')
-    ep_pos_cases, num_ep_pos = OpenSetCasesFields(cases_pos,
-                                                    cfsv2_cases_fields, fix)
-    ep_neg_cases, num_ep_neg = OpenSetCasesFields(cases_neg,
-                                                  cfsv2_cases_fields, fix)
-
-    # CP
-    cases_pos, cases_neg = SelectCase(files_v, index='cp', index_out='ep')
-    cp_pos_cases, num_cp_pos = OpenSetCasesFields(cases_pos,
-                                                  cfsv2_cases_fields, fix)
-    cp_neg_cases, num_cp_neg = OpenSetCasesFields(cases_neg,
-                                                  cfsv2_cases_fields, fix)
-
-    comps = []
-    nums = []
-    comps.append(ep_pos_cases - neutros)
-    nums.append(num_ep_pos)
-
-    comps.append(cp_pos_cases - neutros)
-    nums.append(num_cp_pos)
-
-    comps.append(cp_neg_cases - neutros)
-    nums.append(num_cp_neg)
-
-    comps.append(ep_neg_cases - neutros)
-    nums.append(num_ep_neg)
-
-    comps = xr.concat(comps, dim='plots')
-    comps = comps.rename({v:'var'})
+        comps = composite_to_plot(v, fix)
+        data_ctn = comps
 
     # Plots
     name_fig = f'EP_CP_comp_{v.split("_")[0]}_CFSv2'
     PlotFinal(data=comps, levels=scale, cmap=cbar,
               titles=titles, namefig=name_fig, map=map,
               save=save, dpi=dpi, out_dir=out_dir,
-              data_ctn=data_ctn, color_ctn='k', high=3, width=4,
+              data_ctn=data_ctn, color_ctn='k', high=high, width=width,
               num_cases=True, num_cases_data=nums, num_cols=2,
               ocean_mask=ocean_mask, pdf=False, levels_ctn=levels_ctn,
-              data_ctn_no_ocean_mask=True, step=1)
+              data_ctn_no_ocean_mask=data_ctn_no_ocean_mask, step=1)
 
 print(' --------------------------------------------------------------------- ')
 print('Done')
 print(' --------------------------------------------------------------------- ')
+
