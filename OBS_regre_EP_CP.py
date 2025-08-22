@@ -3,7 +3,7 @@ Regresion total y parcial de EP y CP observado
 No se tiene en cuenta el IOD
 """
 # ---------------------------------------------------------------------------- #
-save = False
+save = True
 out_dir = '/home/luciano.andrian/doc/IOD_ENSO_CP_EP/salidas/'
 # ---------------------------------------------------------------------------- #
 import xarray as xr
@@ -86,7 +86,6 @@ def MakerMaskSig(data, r_crit):
 
     return mask_sig
 
-
 def compute_regre(var1=None, var2=None, ep=None, cp=None, r_crit=1,
                   var1_is_var3=False):
     var1_ep, var1_corr_ep, var1_cp, var1_corr_cp, var1_ep_wocp, \
@@ -134,6 +133,28 @@ def compute_regre(var1=None, var2=None, ep=None, cp=None, r_crit=1,
 
     return aux_v, aux_sig_v
 
+def Detrend(xrda, dim):
+    aux = xrda.polyfit(dim=dim, deg=1)
+    try:
+        trend = xr.polyval(xrda[dim], aux.var_polyfit_coefficients)
+    except:
+        trend = xr.polyval(xrda[dim], aux.polyfit_coefficients)
+    dt = xrda - trend
+    return dt
+
+def OrdenarNC_wTime_fromW(data):
+    newdata = xr.Dataset(
+        data_vars=dict(
+            var=(['time', 'lat', 'lon'], data['var'][0, :, :, :].values)
+
+        ),
+        coords=dict(
+            lon=(['lon'], data.lon),
+            lat=(['lat'], data.lat),
+            time=(['time'], data.time)
+        )
+    )
+    return newdata
 
 # ---------------------------------------------------------------------------- #
 from test_indices import cp_tk, ep_tk, cp_td, ep_td, cp_n, ep_n, \
@@ -184,11 +205,34 @@ data_hgt = xr.open_dataset(f'{data_dir}HGT200_SON_mer_d_w.nc')
 data_hgt = data_hgt.sel(time=data_hgt.time.dt.year.isin(
     np.arange(year_start, year_end+1)))
 
+v_from_w = ['div_UV200', 'vp_from_UV200_w'] # creadas a partir de windphsere
+
+data_div = xr.open_dataset(data_dir + v_from_w[0] + '.nc')
+data_div = Detrend(
+    OrdenarNC_wTime_fromW(data_div.rename({'divergence':'var'})), 'time')
+
+data_vp = xr.open_dataset(data_dir+ v_from_w[1] + '.nc')
+data_vp = Detrend(
+    OrdenarNC_wTime_fromW(data_vp.rename({'velocity_potential':'var'})), 'time')
+
+data_sst = xr.open_dataset("/pikachu/datos/luciano.andrian/verif_2019_2023/"
+                        "sst.mnmean.nc")
+data_sst = data_sst.sel(time=data_sst.time.dt.year.isin(range(1940,2021)))
+data_sst = data_sst.rename({'sst':'var'})
+data_sst = Detrend(data_sst, 'time')
+data_sst = data_sst.drop_dims('nbnds')
+
+from Funciones import SameDateAs
+data_div = SameDateAs(data_div, data_hgt)
+data_vp =  SameDateAs(data_vp, data_hgt)
+data_sst = SameDateAs(data_sst, data_hgt)
+
 print('# Regresion --------------------------------------------------------- #')
 t_critic = 1.66  # es MUY similar (2 digitos) para ambos períodos
 r_crit = np.sqrt(1 / (((np.sqrt((year_end - year_start) - 2) / t_critic) ** 2) + 1))
 
-for ep, cp in zip([ep_tk, ep_td, ep_n], [cp_tk, cp_td, cp_n]):
+for ep, cp, name in zip([ep_tk, ep_td, ep_n], [cp_tk, cp_td, cp_n],
+                        ['tk', 'td', 'n']):
 
     aux_v, aux_sig_v = compute_regre(var1=prec, var2=temp, ep=ep, cp=cp,
                                      r_crit=r_crit, var1_is_var3=False)
@@ -210,7 +254,7 @@ for ep, cp in zip([ep_tk, ep_td, ep_n], [cp_tk, cp_td, cp_n]):
                           levels_r2=scale_t, cmap_r2=cbar,
                           data_ctn=aux_ctn, levels_ctn_r1=scale_hgt,
                           levels_ctn_r2=scale_hgt, color_ctn='k',
-                          titles=subtitulos_regre, namefig='regre_pp_t',
+                          titles=subtitulos_regre, namefig=f'regre_pp_t_{name}',
                           save=save, dpi=dpi,
                           out_dir=out_dir, pdf=True,
                           high=2.5, width=7.7, step=1,
@@ -221,7 +265,7 @@ for ep, cp in zip([ep_tk, ep_td, ep_n], [cp_tk, cp_td, cp_n]):
 
     plt.rcParams['hatch.linewidth'] = 0.5
     PlotFinal(data=aux_hgt, levels=scale_hgt, cmap=cbar,
-              titles=subtitulos_regre, namefig='regre_pp_t', map='hs',
+              titles=subtitulos_regre, namefig=f'regre_hgt_{name}', map='hs',
               save=save, dpi=dpi, out_dir=out_dir,
               data_ctn=aux_hgt, color_ctn='k', high=1.2, width=6,
               num_cases=False, num_cases_data=None, num_cols=2,
@@ -229,3 +273,35 @@ for ep, cp in zip([ep_tk, ep_td, ep_n], [cp_tk, cp_td, cp_n]):
               data_ctn_no_ocean_mask=False, step=1,
               sig_points=aux_sig_hgt, hatches='...')
 
+    scale_sst = [-1, -.5, -.1, 0, .1, .5, 1]
+    scale_div = [-4.33e-07, 4.33e-07]
+    scale_vp = [-3e6, -2.5e6, -2e6, -1.5e6, -1e6, -0.5e6, 0, 0.5e6, 1e6, 1.5e6,
+                2e6, 2.5e6, 3e6]
+
+    cbar_sst = colors.ListedColormap(
+        ['#B98200', '#CD9E46', '#E2B361', '#E2BD5A',
+         '#FFF1C6', 'white', '#B1FFD0', '#7CEB9F',
+         '#52D770', '#32C355', '#1EAF3D'][::-1])
+    cbar_sst.set_over('#9B6500')
+    cbar_sst.set_under('#009B2E')
+    cbar_sst.set_bad(color='white')
+
+    aux_sst, _ = compute_regre(var1=data_sst, var2=None, ep=ep, cp=cp,
+                               r_crit=r_crit, var1_is_var3=False)
+
+    aux_vp, _ = compute_regre(var1=data_vp, var2=None, ep=ep, cp=cp,
+                              r_crit=r_crit, var1_is_var3=False)
+
+    aux_div, _ = compute_regre(var1=data_div, var2=None, ep=ep, cp=cp,
+                               r_crit=r_crit, var1_is_var3=False)
+
+    PlotFinal(data=aux_sst, levels=scale_sst, cmap=cbar_sst,
+              titles=subtitulos_regre, namefig=f'regre_sst_vp_div_{name}', map='hs',
+              save=save, dpi=dpi, out_dir=out_dir,
+              data_ctn=aux_vp, levels_ctn=scale_vp, color_ctn='k',
+              data_ctn2=aux_div, levels_ctn2=scale_div,
+              color_ctn2=['#FF0002', '#0003FF'], high=1.3)
+
+print(' --------------------------------------------------------------------- ')
+print('Done')
+print(' --------------------------------------------------------------------- ')

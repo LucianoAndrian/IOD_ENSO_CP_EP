@@ -8,7 +8,7 @@ CP: CP puros, CP-DMI
 EP-CP: dobles EP_CP, triples
 """
 # ---------------------------------------------------------------------------- #
-save = False
+save = True
 out_dir = '/home/luciano.andrian/doc/IOD_ENSO_CP_EP/salidas/'
 
 # ---------------------------------------------------------------------------- #
@@ -104,7 +104,6 @@ def CompositeSimple(original_data, index):
     else:
         print(' len index = 0')
 
-
 def composite_to_plot(v, fix, cfsv2_cases_fields=cfsv2_cases_fields):
     cases_neutros = [f'{v}_neutros_SON.nc', f'{v}_puros_dmi_pos_SON.nc',
                      f'{v}_puros_dmi_neg_SON.nc']
@@ -150,6 +149,30 @@ def composite_to_plot(v, fix, cfsv2_cases_fields=cfsv2_cases_fields):
     comps = comps.rename({v: 'var'})
 
     return comps
+
+def Detrend(xrda, dim):
+    aux = xrda.polyfit(dim=dim, deg=1)
+    try:
+        trend = xr.polyval(xrda[dim], aux.var_polyfit_coefficients)
+    except:
+        trend = xr.polyval(xrda[dim], aux.polyfit_coefficients)
+    dt = xrda - trend
+    return dt
+
+def OrdenarNC_wTime_fromW(data):
+    newdata = xr.Dataset(
+        data_vars=dict(
+            var=(['time', 'lat', 'lon'], data['var'][0, :, :, :].values)
+
+        ),
+        coords=dict(
+            lon=(['lon'], data.lon),
+            lat=(['lat'], data.lat),
+            time=(['time'], data.time)
+        )
+    )
+    return newdata
+
 # Obs ------------------------------------------------------------------------ #
 from test_indices import cp_tk, ep_tk, cp_td, ep_td, cp_n, ep_n, \
         year_start, year_end
@@ -282,6 +305,56 @@ for v, dir, scale, cbar in zip(variables, dirs, aux_scales, aux_cbar):
               ocean_mask=ocean_mask, pdf=False, levels_ctn=levels_ctn,
               data_ctn_no_ocean_mask=data_ctn_no_ocean_mask, step=1)
 
+# ---------------------------------------------------------------------------- #
+v_from_w = ['div_UV200', 'vp_from_UV200_w'] # creadas a partir de windphsere
+
+data1 = xr.open_dataset(data_dir + v_from_w[0] + '.nc')
+data1 = Detrend(
+    OrdenarNC_wTime_fromW(data1.rename({'divergence':'var'})), 'time')
+
+data2 = xr.open_dataset(data_dir+ v_from_w[1] + '.nc')
+data2 = Detrend(
+    OrdenarNC_wTime_fromW(data2.rename({'velocity_potential':'var'})), 'time')
+
+data3 = xr.open_dataset("/pikachu/datos/luciano.andrian/verif_2019_2023/"
+                        "sst.mnmean.nc")
+data3 = data3.sel(time=data3.time.dt.year.isin(range(1940,2021)))
+data3 = data3.rename({'sst':'var'})
+data3 = Detrend(data3, 'time')
+data3 = data3.drop_dims('nbnds')
+
+neutro_sst, _ = CompositeSimple(data3, neutros)
+neutro_vp, _ = CompositeSimple(data2, neutros)
+neutro_div, _ = CompositeSimple(data1, neutros)
+
+comps_sst = []
+comps_vp = []
+comps_div = []
+for c in cases_ordenados:
+    comps_sst.append(CompositeSimple(data3, c)[0] - neutro_sst)
+    comps_vp.append(CompositeSimple(data2, c)[0] - neutro_vp)
+    comps_div.append(CompositeSimple(data1, c)[0] - neutro_div)
+
+comps_sst = xr.concat(comps_sst, dim='plots')
+comps_vp = xr.concat(comps_vp, dim='plots')
+comps_div = xr.concat(comps_div, dim='plots')
+
+scale_vp_comp = np.linspace(-4.5e6, 4.5e6, 13)
+scale_div_comp = [-1.6e-06, 1.6e-06]
+scale_sst_comp = [-1.5, -1, -0.5, -0.25, 0, 0.25, 0.5, 1, 1.5]
+cbar_sst = colors.ListedColormap(['#B98200', '#CD9E46', '#E2B361', '#E2BD5A',
+                                  '#FFF1C6', 'white', '#B1FFD0', '#7CEB9F',
+                                  '#52D770', '#32C355', '#1EAF3D'][::-1])
+cbar_sst.set_over('#9B6500')
+cbar_sst.set_under('#009B2E')
+cbar_sst.set_bad(color='white')
+
+PlotFinal(data=comps_sst, levels=scale_sst_comp, cmap=cbar_sst,
+          titles=titles, namefig='EP_CP_comp_sst_vp_div', map='hs',
+          save=save, dpi=dpi, out_dir=out_dir,
+          data_ctn=comps_vp, levels_ctn=scale_vp_comp, color_ctn='k',
+          data_ctn2=comps_div, levels_ctn2=scale_div_comp,
+          color_ctn2=['#FF0002', '#0003FF'], high=1.3)
 
 # CFSv2 ---------------------------------------------------------------------- #
 files = os.listdir(cfsv2_cases_fields)
@@ -290,7 +363,6 @@ files = [f for f in files if '.nc' in f]
 titles = ['EP positivos', 'CP positivos', 'EP negativos', 'CP negativos']
 variables = ['tref', 'prec', 'hgt']
 for v, scale, cbar in zip(variables, aux_scales, aux_cbar):
-
 
     if 'prec' in v or 'tref' in v:
         map = 'sa'
@@ -326,11 +398,10 @@ for v, scale, cbar in zip(variables, aux_scales, aux_cbar):
               titles=titles, namefig=name_fig, map=map,
               save=save, dpi=dpi, out_dir=out_dir,
               data_ctn=data_ctn, color_ctn='k', high=high, width=width,
-              num_cases=True, num_cases_data=nums, num_cols=2,
+              num_cases=False, num_cases_data=None, num_cols=2,
               ocean_mask=ocean_mask, pdf=False, levels_ctn=levels_ctn,
               data_ctn_no_ocean_mask=data_ctn_no_ocean_mask, step=1)
 
 print(' --------------------------------------------------------------------- ')
 print('Done')
 print(' --------------------------------------------------------------------- ')
-
