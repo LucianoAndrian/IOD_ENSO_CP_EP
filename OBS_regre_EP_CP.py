@@ -256,7 +256,7 @@ for ep, cp, name in zip([ep_tk, ep_td, ep_n], [cp_tk, cp_td, cp_n],
                           levels_ctn_r2=scale_hgt, color_ctn='k',
                           titles=subtitulos_regre, namefig=f'regre_pp_t_{name}',
                           save=save, dpi=dpi,
-                          out_dir=out_dir, pdf=True,
+                          out_dir=out_dir, pdf=False,
                           high=2.5, width=7.7, step=1,
                           ocean_mask=False, num_cases=False,
                           num_cases_data=None,
@@ -300,7 +300,7 @@ for ep, cp, name in zip([ep_tk, ep_td, ep_n], [cp_tk, cp_td, cp_n],
               save=save, dpi=dpi, out_dir=out_dir,
               data_ctn=aux_vp, levels_ctn=scale_vp, color_ctn='k',
               data_ctn2=aux_div, levels_ctn2=scale_div,
-              color_ctn2=['#FF0002', '#0003FF'], high=1.3)
+              color_ctn2=['#FF0002', '#0003FF'], high=1.3, pdf=False)
 
 print(' --------------------------------------------------------------------- ')
 print('Done')
