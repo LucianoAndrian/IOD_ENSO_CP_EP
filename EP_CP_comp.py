@@ -116,6 +116,8 @@ def composite_to_plot(v, fix, cfsv2_cases_fields=cfsv2_cases_fields):
     else:
         v_aux = v
     files_v = [f for f in files if v_aux in f]
+    files_v = [f for f in files_v if 'CFSv2' not in f]
+    files_v = [f for f in files_v if 'todo' not in f]
 
     # EP
     cases_pos, cases_neg = SelectCase(files_v, index='ep', index_out='cp')

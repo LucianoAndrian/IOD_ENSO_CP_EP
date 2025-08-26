@@ -263,6 +263,8 @@ for t, dir in zip(['Tk', 'Td', 'n'], dirs_cfsv2):
     neutros = neutros.sel(lon=slice(140, 280), lat=slice(-5, 5)).mean('lat')
 
     files_v = [f for f in files if v in f]
+    files_v = [f for f in files_v if 'CFSv2' not in f]
+    files_v = [f for f in files_v if 'todo' not in f]
 
     # EP
     cases_pos, cases_neg = SelectCase(files_v, index='ep', index_out='cp')
