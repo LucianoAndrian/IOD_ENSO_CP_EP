@@ -178,6 +178,7 @@ def OrdenarNC_wTime_fromW(data):
 # Obs ------------------------------------------------------------------------ #
 from test_indices import cp_tk, ep_tk, cp_td, ep_td, cp_n, ep_n, \
         year_start, year_end
+from Walker_index import wi
 
 dmi = DMI(filter_bwa=False, start_per='1920', end_per='2020')[2]
 dmi = dmi.sel(time=slice(f'{year_start}-01-01', f'{year_end}-12-31'))
@@ -253,7 +254,7 @@ map = 'sa'
 
 # Composites ----------------------------------------------------------------- #
 cases_ordenados = [ep_pos_cases, cp_pos_cases, ep_neg_cases, cp_neg_cases]
-titles = ['EP positivos', 'CP positivos', 'EP negativos', 'CP negativos']
+titles = ['EP pos.', 'CP pos.', 'EP neg.', 'CP neg.']
 
 for v, dir, scale, cbar in zip(variables, dirs, aux_scales, aux_cbar):
 
@@ -283,10 +284,12 @@ for v, dir, scale, cbar in zip(variables, dirs, aux_scales, aux_cbar):
 
     neutro_comp, _ = CompositeSimple(data, neutros)
     neutro_comp_ctn, _ = CompositeSimple(data_ctn, neutros)
+    wi_comp, _ = CompositeSimple(wi, neutros)
 
     comps = []
     comps_ctn = []
     nums = []
+    wi_comps = []
     for c in cases_ordenados:
         case_comp, num = CompositeSimple(data, c)
         comps.append(case_comp - neutro_comp)
@@ -295,12 +298,18 @@ for v, dir, scale, cbar in zip(variables, dirs, aux_scales, aux_cbar):
         case_comp_ctn, num = CompositeSimple(data_ctn, c)
         comps_ctn.append(case_comp_ctn - neutro_comp_ctn)
 
+        wi_comp, _ = CompositeSimple(wi, c)
+        wi_comp = float(np.around(wi_comp.walker_index))
+        wi_comps.append(wi_comp)
+
     comps = xr.concat(comps, dim='plots')
     comps_ctn = xr.concat(comps_ctn, dim='plots')
 
+    titles_f = [f"{t} WI={v}" for t, v in zip(titles, wi_comps)]
+
     name_fig = f'EP_CP_comp_{v.split("_")[0]}'
     PlotFinal(data=comps, levels=scale, cmap=cbar,
-              titles=titles, namefig=name_fig, map=map,
+              titles=titles_f, namefig=name_fig, map=map,
               save=save, dpi=dpi, out_dir=out_dir,
               data_ctn=comps_ctn, color_ctn='k', high=high, width=width,
               num_cases=True, num_cases_data=nums, num_cols=2,
@@ -332,10 +341,14 @@ neutro_div, _ = CompositeSimple(data1, neutros)
 comps_sst = []
 comps_vp = []
 comps_div = []
+wi_comps = []
 for c in cases_ordenados:
     comps_sst.append(CompositeSimple(data3, c)[0] - neutro_sst)
     comps_vp.append(CompositeSimple(data2, c)[0] - neutro_vp)
     comps_div.append(CompositeSimple(data1, c)[0] - neutro_div)
+    wi_comp, _ = CompositeSimple(wi, c)
+    wi_comp = float(np.around(wi_comp.walker_index))
+    wi_comps.append(wi_comp)
 
 comps_sst = xr.concat(comps_sst, dim='plots')
 comps_vp = xr.concat(comps_vp, dim='plots')
@@ -351,8 +364,9 @@ cbar_sst.set_over('#9B6500')
 cbar_sst.set_under('#009B2E')
 cbar_sst.set_bad(color='white')
 
+titles_f = [f"{t} WI={v}" for t, v in zip(titles, wi_comps)]
 PlotFinal(data=comps_sst, levels=scale_sst_comp, cmap=cbar_sst,
-          titles=titles, namefig='EP_CP_comp_sst_vp_div', map='hs',
+          titles=titles_f, namefig='EP_CP_comp_sst_vp_div', map='hs',
           save=save, dpi=dpi, out_dir=out_dir,
           data_ctn=comps_vp, levels_ctn=scale_vp_comp, color_ctn='k',
           data_ctn2=comps_div, levels_ctn2=scale_div_comp,
