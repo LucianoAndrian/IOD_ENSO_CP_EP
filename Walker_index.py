@@ -2,7 +2,9 @@
 Indice Walker, cual?
 """
 # ---------------------------------------------------------------------------- #
-compare_n34 = False
+compare_n34 = True
+out_dir = '/home/luciano.andrian/doc/IOD_ENSO_CP_EP/salidas/'
+
 # ---------------------------------------------------------------------------- #
 dir = '/pikachu/datos/luciano.andrian/observado/ncfiles/ERA5/1940_2020/'
 
@@ -34,6 +36,7 @@ wi = WalkerIndex(data)
 
 # ---------------------------------------------------------------------------- #
 if compare_n34:
+    name_fig = 'wi_n34'
     from Funciones import Nino34CPC
     import matplotlib.pyplot as plt
     import matplotlib.dates as mdates
@@ -51,19 +54,21 @@ if compare_n34:
 
     # ------------------------------------------------------------------------ #
     t = wi['time'].values
-    plt.plot(t, -n34_son/n34_son.std('time'),
+    fix, ax = plt.subplots(figsize=(10, 5))
+    ax.plot(t, -n34_son/n34_son.std('time'),
              color='red', label='-ONI')
-    plt.plot(t, wi.walker_index/wi.std('time').walker_index,
+    ax.plot(t, wi.walker_index/wi.std('time').walker_index,
              color='blue', label='Walker Index')
-    plt.axhline(0, color='black', linestyle='--')
+    ax.axhline(0, color='black', linestyle='--')
     r = float(np.corrcoef(-n34_son.values, wi['walker_index'].values)[0, 1])
-    plt.title(f'ONI y Walker Index normalizados - r = {r:.3f}')
-    plt.legend()
-    plt.grid()
+    ax.set_title(f'ONI y Walker Index normalizados - r = {r:.3f}')
+    ax.legend()
+    ax.grid(True, linestyle = '--', alpha = 0.6)
     ax = plt.gca()
     ax.xaxis.set_major_locator(mdates.YearLocator(base=10))
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
     plt.tight_layout()
+    plt.savefig(f'{out_dir}{name_fig}.png')
     plt.show()
 
 # ---------------------------------------------------------------------------- #
