@@ -3,6 +3,7 @@ Funciones generales
 """
 # ---------------------------------------------------------------------------- #
 import xarray as xr
+import numpy as np
 
 # ---------------------------------------------------------------------------- #
 def xrFieldTimeDetrend(xrda, dim, deg=1):
@@ -45,3 +46,29 @@ def RegreField(field, index, return_coef=False):
         result = fitted
 
     return result
+
+# ---------------------------------------------------------------------------- #
+def open_and_load(path):
+    ds = xr.open_dataset(path, engine='netcdf4')  # backend explícito
+    ds_loaded = ds.load()  # carga a memoria
+    ds.close()             # cierra archivo en disco
+    return ds_loaded
+
+# ---------------------------------------------------------------------------- #
+def MakeMask(DataArray, dataname='mask'):
+    import regionmask
+    mask=regionmask.defined_regions.natural_earth_v5_0_0.countries_110.mask(DataArray)
+    mask = xr.where(np.isnan(mask), mask, 1)
+    mask = mask.to_dataset(name=dataname)
+    return mask
+
+# ---------------------------------------------------------------------------- #
+def SameDateAs(data, datadate):
+    """
+    En data selecciona las mismas fechas que datadate
+    :param data:
+    :param datadate:
+    :return:
+    """
+    return data.sel(time=datadate.time.values)
+# ---------------------------------------------------------------------------- #
