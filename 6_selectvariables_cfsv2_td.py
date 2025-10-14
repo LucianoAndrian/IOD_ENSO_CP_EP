@@ -10,11 +10,11 @@ from funciones.select_variables_cfsv2 import SelectVariables
 import os
 os.environ['HDF5_USE_FILE_LOCKING'] = 'FALSE'
 # ---------------------------------------------------------------------------- #
-out_dir = '/pikachu/datos/luciano.andrian/cases_fields_EP_CP/aux_ep_cp_t/'
+out_dir = '/pikachu/datos/luciano.andrian/cases_fields_EP_CP/td/'
 
-cases_date_dir = '/pikachu/datos/luciano.andrian/cases_dates_EP_CP/aux_ep_cp_t/'
+cases_date_dir = '/pikachu/datos/luciano.andrian/cases_dates_EP_CP/td/'
 data_dir = '/pikachu/datos/luciano.andrian/cases_fields/'
-data_dir_indices = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/aux_ep_cp_t/'
+data_dir_indices = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/td/'
 
 # Funcion -------------------------------------------------------------------- #
 def Aux_SelectEvents(f, var_file, cases_dir, data_dir, out_dir,
@@ -47,33 +47,41 @@ def Run(files, var_file, div, cases_dir=cases_date_dir, data_dir=data_dir,
 # ---------------------------------------------------------------------------- #
 files = os.listdir(cases_date_dir)
 files = [f for f in files if f.endswith('.nc')]
+div = len(files) // 2
 
 # EP Td ---------------------------------------------------------------------- #
 var_file = 'EP_Td_SON_Leads_r_CFSv2.nc'
-div = len(files) // 2
-Run(files, var_file, div, data_dir=data_dir_indices, cases_dir=cases_date_dir,
-    out_dir=out_dir, replace_name='CFSv2_Td_')
+Run(files, var_file, div, data_dir=data_dir_indices, replace_name='CFSv2_Td_')
 
-# CP Td ----------------------------------------------------------------------- #
+# CP Td ---------------------------------------------------------------------- #
 var_file = 'CP_Td_SON_Leads_r_CFSv2.nc'
-
-div = len(files) // 2
-Run(files, var_file, div, data_dir=data_dir_indices, cases_dir=cases_date_dir,
-    out_dir=out_dir, replace_name='CFSv2_Td_')
+Run(files, var_file, div, data_dir=data_dir_indices, replace_name='CFSv2_Td_')
 
 # DMI con Td ----------------------------------------------------------------- #
 var_file = 'DMI_SON_Leads_r_CFSv2.nc'
-data_dir_indices = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/'
-
-div = len(files) // 2
-Run(files, var_file, div, data_dir=data_dir_indices, cases_dir=cases_date_dir,
-    out_dir=out_dir, replace_name='CFSv2_Td_')
+aux_data_dir_indices = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/'
+Run(files, var_file, div, data_dir=aux_data_dir_indices,
+    replace_name='CFSv2_Td_')
 
 # SST ------------------------------------------------------------------------ #
 var_file = 'sst_son.nc'
-div = len(files) // 2
-Run(files, var_file, div, data_dir=data_dir, cases_dir=cases_date_dir,
-    out_dir=out_dir, replace_name='CFSv2_Td_')
+Run(files, var_file, div, data_dir=data_dir, replace_name='CFSv2_Td_')
+
+# HGT ------------------------------------------------------------------------ #
+var_file = 'hgt_son.nc'
+Run(files, var_file, div, data_dir=data_dir, replace_name='CFSv2_Td_')
+
+# HGT750 --------------------------------------------------------------------- #
+var_file = 'hgt750_son_detrend.nc'
+Run(files, var_file, div, data_dir=data_dir, replace_name='CFSv2_Td_')
+
+# Tref ----------------------------------------------------------------------- #
+var_file = 'tref_son.nc'
+Run(files, var_file, div, data_dir=data_dir, replace_name='CFSv2_Td_')
+
+# Prec ----------------------------------------------------------------------- #
+var_file = 'prec_son.nc'
+Run(files, var_file, div, data_dir=data_dir, replace_name='CFSv2_Td_')
 
 print('# --------------------------------------------------------------------#')
 print('# --------------------------------------------------------------------#')

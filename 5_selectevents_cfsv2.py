@@ -10,7 +10,9 @@ os.environ['HDF5_USE_FILE_LOCKING'] = 'FALSE'
 
 # ---------------------------------------------------------------------------- #
 save_nc = True
-out_dir = '/pikachu/datos/luciano.andrian/cases_dates_EP_CP/'
+out_dir_tk = '/pikachu/datos/luciano.andrian/cases_dates_EP_CP/tk/'
+out_dir_td = '/pikachu/datos/luciano.andrian/cases_dates_EP_CP/td/'
+out_dir_n = '/pikachu/datos/luciano.andrian/cases_dates_EP_CP/n/'
 
 dates_dir = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/'
 
@@ -299,7 +301,7 @@ variables = ['dmi', 'ep', 'cp']
 events = Compute_Clasificar(variables, ds1=dmi, ds2=ep, ds3=cp, thr=0.5)
 
 if save_nc is True:
-    save_event_dict_to_netcdf(events, out_dir, season='SON', prefix='CFSv2')
+    save_event_dict_to_netcdf(events, out_dir_tk, season='SON', prefix='CFSv2')
 
 del events
 
@@ -316,8 +318,7 @@ cp = OpenAndSetIndice(dates_dir_ep_cp, 'CP_Td_SON_Leads_r_CFSv2.nc')
 events = Compute_Clasificar(variables, ds1=dmi, ds2=ep, ds3=cp, thr=0.5)
 
 if save_nc is True:
-    out_dir = '/pikachu/datos/luciano.andrian/cases_dates_EP_CP/aux_ep_cp_t/'
-    save_event_dict_to_netcdf(events, out_dir, season='SON', prefix='CFSv2_Td')
+    save_event_dict_to_netcdf(events, out_dir_td, season='SON', prefix='CFSv2_Td')
 
 del events
 # ---------------------------------------------------------------------------- #
@@ -333,8 +334,7 @@ cp = OpenAndSetIndice(dates_dir_ep_cp, 'CP_n_SON_Leads_r_CFSv2.nc')
 events = Compute_Clasificar(variables, ds1=dmi, ds2=ep, ds3=cp, thr=0.5)
 
 if save_nc is True:
-    out_dir = '/pikachu/datos/luciano.andrian/cases_dates_EP_CP/aux_ep_cp_n/'
-    save_event_dict_to_netcdf(events, out_dir, season='SON', prefix='CFSv2_n')
+    save_event_dict_to_netcdf(events, out_dir_n, season='SON', prefix='CFSv2_n')
 
 del events
 print('# --------------------------------------------------------------------#')
