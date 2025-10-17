@@ -81,9 +81,9 @@ def SelectParIndex(case, idx1_name, idx2_name,
     else:
         return [], []
 
-def PlotScatter(idx1_name, idx2_name, idx1_sd, idx2_sd, save=save,
-                out_dir=out_dir,  name_fig='fig', dpi=dpi,
-                cases_dir='', index_dir='', add_all=False):
+def tmp_PlotScatter(idx1_name, idx2_name, idx1_sd, idx2_sd, save=save,
+                    out_dir=out_dir,  name_fig='fig', dpi=dpi,
+                    cases_dir='', index_dir='', add_all=False):
 
     idx1_name = idx1_name#.upper()
     idx1 = idx1_name.lower()
@@ -283,32 +283,32 @@ index_dir = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/tk/'
 sd_ep_s = xr.open_dataset(index_dir + 'EP_SON_Leads_r_CFSv2.nc').std()
 sd_cp_s = xr.open_dataset(index_dir + 'CP_SON_Leads_r_CFSv2.nc').std()
 
-PlotScatter(idx1_name='DMI', idx2_name='EP',
+tmp_PlotScatter(idx1_name='DMI', idx2_name='EP',
             idx1_sd=sd_dmi_s, idx2_sd= sd_ep_s, save=save,
             name_fig='Scatter_DMI-EP',
             cases_dir=cases_dir, index_dir=index_dir)
 
-PlotScatter(idx1_name='DMI', idx2_name='CP',
+tmp_PlotScatter(idx1_name='DMI', idx2_name='CP',
             idx1_sd=sd_dmi_s, idx2_sd= sd_cp_s, save=save,
             name_fig='Scatter_DMI-CP',
             cases_dir=cases_dir, index_dir=index_dir)
 
-PlotScatter(idx1_name='EP', idx2_name='CP',
+tmp_PlotScatter(idx1_name='EP', idx2_name='CP',
             idx1_sd=sd_ep_s, idx2_sd= sd_cp_s, save=save,
             name_fig='Scatter_EP-CP',
             cases_dir=cases_dir, index_dir=index_dir)
 
-PlotScatter(idx1_name='DMI', idx2_name='EP',
+tmp_PlotScatter(idx1_name='DMI', idx2_name='EP',
             idx1_sd=sd_dmi_s, idx2_sd= sd_ep_s, save=save,
             name_fig='Scatter_DMI-EP_todo',
             cases_dir=cases_dir, index_dir=index_dir, add_all=True)
 
-PlotScatter(idx1_name='DMI', idx2_name='CP',
+tmp_PlotScatter(idx1_name='DMI', idx2_name='CP',
             idx1_sd=sd_dmi_s, idx2_sd= sd_cp_s, save=save,
             name_fig='Scatter_DMI-CP_todo',
             cases_dir=cases_dir, index_dir=index_dir, add_all=True)
 
-PlotScatter(idx1_name='EP', idx2_name='CP',
+tmp_PlotScatter(idx1_name='EP', idx2_name='CP',
             idx1_sd=sd_ep_s, idx2_sd= sd_cp_s, save=save,
             name_fig='Scatter_EP-CP_todo',
             cases_dir=cases_dir, index_dir=index_dir, add_all=True)
@@ -320,32 +320,32 @@ index_dir = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/td/'
 sd_ep_s = xr.open_dataset(index_dir + 'EP_Td_SON_Leads_r_CFSv2.nc').std()
 sd_cp_s = xr.open_dataset(index_dir + 'CP_Td_SON_Leads_r_CFSv2.nc').std()
 
-PlotScatter(idx1_name='DMI', idx2_name='EP',
+tmp_PlotScatter(idx1_name='DMI', idx2_name='EP',
             idx1_sd=sd_dmi_s, idx2_sd= sd_ep_s, save=save,
             name_fig='Scatter_DMI-EP_Td',
             cases_dir=cases_dir, index_dir=index_dir)
 
-PlotScatter(idx1_name='DMI', idx2_name='CP',
+tmp_PlotScatter(idx1_name='DMI', idx2_name='CP',
             idx1_sd=sd_dmi_s, idx2_sd= sd_cp_s, save=save,
             name_fig='Scatter_DMI-CP_Td',
             cases_dir=cases_dir, index_dir=index_dir)
 
-PlotScatter(idx1_name='EP', idx2_name='CP',
+tmp_PlotScatter(idx1_name='EP', idx2_name='CP',
             idx1_sd=sd_ep_s, idx2_sd= sd_cp_s, save=save,
             name_fig='Scatter_EP_Td-CP_Td',
             cases_dir=cases_dir, index_dir=index_dir)
 
-PlotScatter(idx1_name='DMI', idx2_name='EP',
+tmp_PlotScatter(idx1_name='DMI', idx2_name='EP',
             idx1_sd=sd_dmi_s, idx2_sd= sd_ep_s, save=save,
             name_fig='Scatter_DMI-EP_Td_todo',
             cases_dir=cases_dir, index_dir=index_dir, add_all=True)
 
-PlotScatter(idx1_name='DMI', idx2_name='CP',
+tmp_PlotScatter(idx1_name='DMI', idx2_name='CP',
             idx1_sd=sd_dmi_s, idx2_sd= sd_cp_s, save=save,
             name_fig='Scatter_DMI-CP_Td_todo',
             cases_dir=cases_dir, index_dir=index_dir, add_all=True)
 
-PlotScatter(idx1_name='EP', idx2_name='CP',
+tmp_PlotScatter(idx1_name='EP', idx2_name='CP',
             idx1_sd=sd_ep_s, idx2_sd= sd_cp_s, save=save,
             name_fig='Scatter_EP-CP_Td_todo',
             cases_dir=cases_dir, index_dir=index_dir, add_all=True)
@@ -356,32 +356,32 @@ index_dir = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/n/'
 sd_ep_s = xr.open_dataset(index_dir + 'EP_n_SON_Leads_r_CFSv2.nc').std()
 sd_cp_s = xr.open_dataset(index_dir + 'CP_n_SON_Leads_r_CFSv2.nc').std()
 
-PlotScatter(idx1_name='DMI', idx2_name='EP',
+tmp_PlotScatter(idx1_name='DMI', idx2_name='EP',
             idx1_sd=sd_dmi_s, idx2_sd= sd_ep_s, save=save,
             name_fig='Scatter_DMI-EP_n',
             cases_dir=cases_dir, index_dir=index_dir)
 
-PlotScatter(idx1_name='DMI', idx2_name='CP',
+tmp_PlotScatter(idx1_name='DMI', idx2_name='CP',
             idx1_sd=sd_dmi_s, idx2_sd= sd_cp_s, save=save,
             name_fig='Scatter_DMI-CP_n',
             cases_dir=cases_dir, index_dir=index_dir)
 
-PlotScatter(idx1_name='EP', idx2_name='CP',
+tmp_PlotScatter(idx1_name='EP', idx2_name='CP',
             idx1_sd=sd_ep_s, idx2_sd= sd_cp_s, save=save,
             name_fig='Scatter_EP-CP_n',
             cases_dir=cases_dir, index_dir=index_dir)
 
-PlotScatter(idx1_name='DMI', idx2_name='EP',
+tmp_PlotScatter(idx1_name='DMI', idx2_name='EP',
             idx1_sd=sd_dmi_s, idx2_sd= sd_ep_s, save=save,
             name_fig='Scatter_DMI-EP_n_todo',
             cases_dir=cases_dir, index_dir=index_dir, add_all=True)
 
-PlotScatter(idx1_name='DMI', idx2_name='CP',
+tmp_PlotScatter(idx1_name='DMI', idx2_name='CP',
             idx1_sd=sd_dmi_s, idx2_sd= sd_cp_s, save=save,
             name_fig='Scatter_DMI-CP_n_todo',
             cases_dir=cases_dir, index_dir=index_dir, add_all=True)
 
-PlotScatter(idx1_name='EP', idx2_name='CP',
+tmp_PlotScatter(idx1_name='EP', idx2_name='CP',
             idx1_sd=sd_ep_s, idx2_sd= sd_cp_s, save=save,
             name_fig='Scatter_EP-CP_n_todo',
             cases_dir=cases_dir, index_dir=index_dir, add_all=True)
