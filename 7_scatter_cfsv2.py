@@ -163,10 +163,6 @@ def PlotScatter(idx1_name, idx2_name, idx1_sd, idx2_sd, save=save,
             open_idx1=False, open_idx2=False,
             cases_dir=cases_dir, index_dir=index_dir)
 
-
-        print('test')
-        print(idx1_todo_neg)
-
         case = f'CFSv2_todo_{idx1}_pos_SON.nc'
         idx1_todo_pos, idx2_in_idx1_todo_pos = SelectParIndex(
             case=case, idx1_name=idx1_name, idx2_name=idx2_name,
@@ -281,8 +277,8 @@ def PlotScatter(idx1_name, idx2_name, idx1_sd, idx2_sd, save=save,
         plt.show()
 
 # ---------------------------------------------------------------------------- #
-cases_dir = '/pikachu/datos/luciano.andrian/cases_fields_EP_CP/'
-index_dir = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/'
+cases_dir = '/pikachu/datos/luciano.andrian/cases_fields_EP_CP/tk/'
+index_dir = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/tk/'
 
 sd_ep_s = xr.open_dataset(index_dir + 'EP_SON_Leads_r_CFSv2.nc').std()
 sd_cp_s = xr.open_dataset(index_dir + 'CP_SON_Leads_r_CFSv2.nc').std()
@@ -318,8 +314,8 @@ PlotScatter(idx1_name='EP', idx2_name='CP',
             cases_dir=cases_dir, index_dir=index_dir, add_all=True)
 
 # ---------------------------------------------------------------------------- #
-cases_dir = '/pikachu/datos/luciano.andrian/cases_fields_EP_CP/aux_ep_cp_t/'
-index_dir = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/aux_ep_cp_t/'
+cases_dir = '/pikachu/datos/luciano.andrian/cases_fields_EP_CP/td/'
+index_dir = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/td/'
 
 sd_ep_s = xr.open_dataset(index_dir + 'EP_Td_SON_Leads_r_CFSv2.nc').std()
 sd_cp_s = xr.open_dataset(index_dir + 'CP_Td_SON_Leads_r_CFSv2.nc').std()
@@ -354,8 +350,8 @@ PlotScatter(idx1_name='EP', idx2_name='CP',
             name_fig='Scatter_EP-CP_Td_todo',
             cases_dir=cases_dir, index_dir=index_dir, add_all=True)
 # ---------------------------------------------------------------------------- #
-cases_dir = '/pikachu/datos/luciano.andrian/cases_fields_EP_CP/aux_ep_cp_n/'
-index_dir = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/aux_ep_cp_n/'
+cases_dir = '/pikachu/datos/luciano.andrian/cases_fields_EP_CP/n/'
+index_dir = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/n/'
 
 sd_ep_s = xr.open_dataset(index_dir + 'EP_n_SON_Leads_r_CFSv2.nc').std()
 sd_cp_s = xr.open_dataset(index_dir + 'CP_n_SON_Leads_r_CFSv2.nc').std()
