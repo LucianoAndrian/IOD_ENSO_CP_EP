@@ -72,3 +72,16 @@ def SameDateAs(data, datadate):
     """
     return data.sel(time=datadate.time.values)
 # ---------------------------------------------------------------------------- #
+def MakerMaskSig(data, r_crit):
+    mask_sig = data.where((data < -1 * r_crit) | (data > r_crit))
+    mask_sig = mask_sig.where(np.isnan(mask_sig), 1)
+
+    return mask_sig
+
+# ---------------------------------------------------------------------------- #
+def Weights(data):
+    weights = np.transpose(np.tile(np.cos(data.lat * np.pi / 180),
+                                   (len(data.lon), 1)))
+    data_w = data * weights
+    return data_w
+# ---------------------------------------------------------------------------- #
