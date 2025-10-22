@@ -5,7 +5,7 @@ NO TIENE SIG
 Por ahora, se mantiene el orden de las figuras de 2 filas y 3 columnas
 """
 # ---------------------------------------------------------------------------- #
-save = False
+save = True
 out_dir = '/home/luciano.andrian/doc/IOD_ENSO_CP_EP/salidas/'
 cases_fields = '/pikachu/datos/luciano.andrian/cases_fields_EP_CP/'
 
