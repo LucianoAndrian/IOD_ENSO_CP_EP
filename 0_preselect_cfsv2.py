@@ -160,30 +160,33 @@ def SetDataCFSv2(data, sa=True):
 def SplitFilesByMonotonicity(files):
     """ Divide la lista de archivos en segmentos donde el índice S
     sea monotónico """
-    for i in range(1, len(files)):
+    def test_open(sublist):
         try:
-            # Intentar abrir los archivos hasta el índice i
-            xr.open_mfdataset(files[:i], decode_times=False)
+            xr.open_mfdataset(sublist, decode_times=False)
+            return False
         except ValueError as e:
-            if "monotonic global indexes along dimension S" in str(e):
-                return files[:i-1], files[i-1:]
-    return files, []
+            print(e)
+            return True
 
+        xr.backends.file_manager._FILE_CACHE.clear()
 
+    low, high = 0, len(files)
 
-    if purge_extra_dims:
-        extra_dim = [d for d in data_anom_mon['var'].dims
-                     if d not in ['lon', 'lat', 'time']]
-        for dim in extra_dim:
-            first_val = data_anom_mon[dim].values[0]
-            data_anom_mon = data_anom_mon.sel({dim: first_val}).drop(dim)
-            print(f'drop_dim: {dim}')
+    mid = (low + high) // 2
 
-    if purge_extra_var:
-        extra_var = [v for v in list(data_anom_mon.data_vars) if v != 'var']
-        for var in extra_var:
-            data_anom_mon = data_anom_mon.drop(var)
-        print(f'drop_var: {var}')
+    while high - low > 1:
+        mid = (low + high) // 2
+        subset = files[low:mid]
+
+        if test_open(subset):  # Falla
+            high = mid
+        else:
+            low = mid
+
+        print(mid)
+
+    return files[:mid], files[mid:]
+
 def purge_extra_dim(data, dims_to_keep):
 
     name_var = list(data.data_vars)[0]
