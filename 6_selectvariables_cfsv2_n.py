@@ -83,6 +83,10 @@ Run(files, var_file, div, data_dir=data_dir, replace_name='CFSv2_n_')
 var_file = 'prec_son.nc'
 Run(files, var_file, div, data_dir=data_dir, replace_name='CFSv2_n_')
 
+# vpot ----------------------------------------------------------------------- #
+var_file = 'vpot200_son_detrend.nc'
+Run(files, var_file, div, data_dir=data_dir, replace_name='CFSv2_n_')
+
 print('# --------------------------------------------------------------------#')
 print('# --------------------------------------------------------------------#')
 print('done')

@@ -81,6 +81,10 @@ Run(files, var_file, div, data_dir=data_dir)
 var_file = 'prec_son.nc'
 Run(files, var_file, div, data_dir=data_dir)
 
+# vpot ----------------------------------------------------------------------- #
+var_file = 'vpot200_son_detrend.nc'
+Run(files, var_file, div, data_dir=data_dir)
+
 print('# --------------------------------------------------------------------#')
 print('# --------------------------------------------------------------------#')
 print('done')
