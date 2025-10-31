@@ -5,10 +5,10 @@ NO TIENE SIG
 Por ahora, se mantiene el orden de las figuras de 2 filas y 3 columnas
 """
 # ---------------------------------------------------------------------------- #
-save = True
+save = False
 out_dir = '/home/luciano.andrian/doc/IOD_ENSO_CP_EP/salidas/'
 cases_fields = '/pikachu/datos/luciano.andrian/cases_fields_EP_CP/'
-
+sig_dir = '/pikachu/datos/luciano.andrian/cases_fields_EP_CP/sig/'
 # ---------------------------------------------------------------------------- #
 import os
 os.environ['HDF5_USE_FILE_LOCKING'] = 'FALSE'
@@ -48,8 +48,7 @@ def Combinations(idx, indices):
 
     return idx, idx_aux2, idx_aux3
 
-def OpenSetCases(var, idx1, idx2, idx3, phase, dir):
-
+def OpenSetCases(var, idx1, idx2, idx3, phase, dir, sig=False):
 
     if 'prec' in var:
         fix = 30
@@ -63,9 +62,13 @@ def OpenSetCases(var, idx1, idx2, idx3, phase, dir):
     idx2 = idx2.lower()
     idx3 = idx3.lower()
 
+    if sig is True:
+        var = f'QT_{var}'
+
     cases = {}
     # neutro
-    cases['neutros'] = xr.open_dataset(f'{dir}{var}_neutros_SON.nc') * fix
+    if sig is False:
+        cases['neutros'] = xr.open_dataset(f'{dir}{var}_neutros_SON.nc') * fix
 
     indices = [idx1, idx2, idx3]
 
@@ -177,13 +180,55 @@ def MakeComposite(cases):
 
     return cases_ordenados, titles
 
+def aux_ordenar_sig(sig):
+
+    sig_ordenados = [None, None, None, None, None, None]
+    indices = list(sig.keys())
+
+    for i in indices:
+        i_sig = sig[i]
+        i_sig_k = list(i_sig.keys())
+
+        if len(i_sig_k) > 1:
+            for key in i_sig_k:
+                key_sig = i_sig[key]
+                subkeys = list(key_sig.keys())
+
+                if len(subkeys) > 1:
+                    for sk in subkeys:
+                        pos = Decider(i, key, indices, sk)
+                        sig_ordenados[pos] = key_sig[sk]
+
+                else:
+                    pos = Decider(i, key, indices)
+                    sig_ordenados[pos] = key_sig
+
+        else:
+            key = i_sig_k[0]
+            pos = Decider(i, key, indices)
+            sig_ordenados[pos] = i_sig[key]
+
+    sig_ordenados = xr.concat(sig_ordenados, dim='plots')
+    var_name = list(sig_ordenados.data_vars)[0]
+    sig_ordenados = sig_ordenados.rename({var_name: 'var'})
+
+    return sig_ordenados
+
+
+
 # ---------------------------------------------------------------------------- #
 variables = ['sst', 'tref', 'prec', 'hgt']
 aux_scales = ['t_comp_cfsv2', 't_comp_cfsv2', 'pp_comp_cfsv2', 'hgt_comp_cfsv2']
 aux_cbar = ['cbar_rdbu', 'cbar_rdbu', 'pp_11', 'cbar_rdbu']
 
+aux_scales = ['t_comp_cfsv2',  'hgt_comp_cfsv2']
+aux_cbar = ['cbar_rdbu', 'cbar_rdbu']
+
+variables = ['sst', 'hgt']
 for i in ['tk', 'td', 'n']:
     i_dir = f'{cases_fields}{i}/'
+    s_dir = f'{sig_dir}{i}/'
+
     for v, sc, cb in zip(variables, aux_scales, aux_cbar):
 
         scale = get_scales(sc)
@@ -196,6 +241,31 @@ for i in ['tk', 'td', 'n']:
                                  dir=i_dir)
 
             cases_ordenados, titles = MakeComposite(cases)
+
+            sig = OpenSetCases(var=v,
+                               idx1='dmi', idx2='ep', idx3='cp',
+                               phase=f,
+                               dir=s_dir,
+                               sig=True)
+
+            sig_ordenados = aux_ordenar_sig(sig)
+
+            def SigMask(cases, sig):
+                import numpy as np
+                cases_sig = []
+                var_name = list(cases.data_vars)[0]
+                for p in cases.plots:
+                    aux_c = cases.sel(plots=p)[var_name]
+                    aux_s = sig.sel(plots=p)[var_name]
+
+                    aux =  aux_c.where((aux_c < aux_s[0]) | (aux_c > aux_s[1]))
+                    aux_sig = aux.where(np.isnan(aux), 1)
+
+                    cases_sig.append(aux_sig)
+
+                return xr.concat(cases_sig, dim='plots')
+
+            cases_sig = SigMask(cases_ordenados, sig_ordenados)
 
             if v == 'tref' or v == 'prec':
                 map = 'sa'
@@ -224,6 +294,7 @@ for i in ['tk', 'td', 'n']:
                       data_ctn=data_ctn, color_ctn='k', high=high,
                       num_cases=None, num_cases_data=None, num_cols=3,
                       ocean_mask=ocean_mask, pdf=False, levels_ctn=levels_ctn,
-                      data_ctn_no_ocean_mask=True)
+                      data_ctn_no_ocean_mask=True,
+                      sig_points=cases_sig, hatches='.....')
 
 # ---------------------------------------------------------------------------- #
