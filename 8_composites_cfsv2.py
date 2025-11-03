@@ -1,11 +1,10 @@
 """
 Composites con el modelo CFSv2
 
-NO TIENE SIG
 Por ahora, se mantiene el orden de las figuras de 2 filas y 3 columnas
 """
 # ---------------------------------------------------------------------------- #
-save = False
+save = True
 out_dir = '/home/luciano.andrian/doc/IOD_ENSO_CP_EP/salidas/'
 cases_fields = '/pikachu/datos/luciano.andrian/cases_fields_EP_CP/'
 sig_dir = '/pikachu/datos/luciano.andrian/cases_fields_EP_CP/sig/'
@@ -221,10 +220,10 @@ variables = ['sst', 'tref', 'prec', 'hgt']
 aux_scales = ['t_comp_cfsv2', 't_comp_cfsv2', 'pp_comp_cfsv2', 'hgt_comp_cfsv2']
 aux_cbar = ['cbar_rdbu', 'cbar_rdbu', 'pp_11', 'cbar_rdbu']
 
-aux_scales = ['t_comp_cfsv2',  'hgt_comp_cfsv2']
-aux_cbar = ['cbar_rdbu', 'cbar_rdbu']
+variables = ['sst', 'hgt', 'vpot200']
+aux_scales = ['t_comp_cfsv2',  'hgt_comp_cfsv2', 'vpot200_cfsv2']
+aux_cbar = ['cbar_rdbu', 'cbar_rdbu', 'cbar_rdbu']
 
-variables = ['sst', 'hgt']
 for i in ['tk', 'td', 'n']:
     i_dir = f'{cases_fields}{i}/'
     s_dir = f'{sig_dir}{i}/'
@@ -269,17 +268,30 @@ for i in ['tk', 'td', 'n']:
 
             if v == 'tref' or v == 'prec':
                 map = 'sa'
-                cases_hgt750 = OpenSetCases(var='hgt',
+                aux_cases = OpenSetCases(var='hgt',
                                             idx1='dmi', idx2='ep', idx3='cp',
                                             phase=f,
                                             dir=i_dir)
 
-                cases_ordenados_hgt, _ = MakeComposite(cases_hgt750)
-                data_ctn = cases_ordenados_hgt
+                aux_cases_ordenados, _ = MakeComposite(aux_cases)
+                data_ctn = aux_cases_ordenados
                 levels_ctn = get_scales('hgt_comp_cfsv2')
                 data_ctn_no_ocean_mask = True
                 ocean_mask = True
                 high = 3
+
+            elif v == 'sst':
+                aux_cases = OpenSetCases(var='vpot200',
+                                            idx1='dmi', idx2='ep', idx3='cp',
+                                            phase=f,
+                                            dir=i_dir)
+                aux_cases_ordenados, _ = MakeComposite(aux_cases)
+                data_ctn = aux_cases_ordenados
+                map = 'hs'
+                levels_ctn = get_scales('vpot200_cfsv2')
+                ocean_mask = False
+                high = 1.3
+
             else:
                 map = 'hs'
                 data_ctn = cases_ordenados
@@ -287,7 +299,7 @@ for i in ['tk', 'td', 'n']:
                 ocean_mask = False
                 high = 1.3
 
-            name_fig = f'comp_{i}_{v}_{f}'
+            name_fig = f'comp_{i}/comp_{i}_{v}_{f}'
             PlotFinal(data=cases_ordenados, levels=scale, cmap=cbar,
                       titles=titles, namefig=name_fig, map=map,
                       save=save, dpi=dpi, out_dir=out_dir,
@@ -295,6 +307,6 @@ for i in ['tk', 'td', 'n']:
                       num_cases=None, num_cases_data=None, num_cols=3,
                       ocean_mask=ocean_mask, pdf=False, levels_ctn=levels_ctn,
                       data_ctn_no_ocean_mask=True,
-                      sig_points=cases_sig, hatches='.....')
+                      sig_points=cases_sig, hatches='......')
 
 # ---------------------------------------------------------------------------- #

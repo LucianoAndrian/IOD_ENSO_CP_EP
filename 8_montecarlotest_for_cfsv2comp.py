@@ -18,6 +18,7 @@ import multiprocessing as mp
 # ---------------------------------------------------------------------------- #
 dir_events = '/pikachu/datos/luciano.andrian/cases_fields_EP_CP/'
 mc_tmp_dir = '/pikachu/datos/luciano.andrian/aux_mc/'
+
 # Functions ------------------------------------------------------------------ #
 def CompositesSimple_CFSv2(data, index):
 
@@ -78,7 +79,7 @@ def selectcases(v, dir):
 
 # ---------------------------------------------------------------------------- #
 indices = ['tk', 'td', 'n']
-variables = ['sst', 'hgt']
+variables = ['sst', 'hgt', 'vpot200']
 
 for i in indices:
     print(i)
