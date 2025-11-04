@@ -206,7 +206,7 @@ if plots:
     tmp_PlotTimeSeries(serie1=n34_son, serie2=cp_tk, serie3=ep_tk,
                        label1='ONI', label2='CP', label3='EP',
                        title=f'Takahashi et al. 2011 \n '
-                             f'Correlatinon EP vs CP = {corr_ep_cp}',
+                             f'Corr, EP vs CP = {corr_ep_cp}',
                        name_fig='tk_ep_cp_comparison_w_r', save=save)
 
     tmp_PlotOne(cp_reg_tk, levels=levels,
@@ -226,7 +226,7 @@ if plots:
     tmp_PlotTimeSeries(serie1=n34_son, serie2=cp_td, serie3=ep_td,
                        label1='ONI', label2='CP', label3='EP',
                        title=f'Tedeschi et al. 2014 \n '
-                         f'Correlatinon EP vs CP = {corr_ep_cp}',
+                         f'Corr, EP vs CP = {corr_ep_cp}',
                        name_fig='td_ep_cp_comparison_w_r', save=save)
 
     cp_reg_td = RegreField(sst, cp_td, return_coef=True)
@@ -255,7 +255,7 @@ if plots:
     tmp_PlotTimeSeries(serie1=n34_son, serie2=cp_n, serie3=ep_n,
                        label1='ONI', label2='CP', label3='EP',
                        title=f'Sulivan et al. 2016\n '
-                         f'Correlatinon EP vs CP = {corr_ep_cp}',
+                         f'Corr, EP vs CP = {corr_ep_cp}',
                        name_fig='n_ep_cp_comparison_w_r', save=save)
 
     cp_reg_n = RegreField(sst, cp_n, return_coef=True)
