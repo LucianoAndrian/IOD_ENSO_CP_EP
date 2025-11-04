@@ -532,3 +532,14 @@ def PlotFinalTwoVariables(data, num_cols,
 
 
     plt.show()
+
+
+def DarkenColor(color, dc=0.2, as_hex=True):
+    amount = 1 - dc
+    try:
+        c = mcolors.cnames[color]
+    except KeyError:
+        c = color
+    r, g, b = mcolors.to_rgb(c)
+    new_rgb = (r * amount, g * amount, b * amount)
+    return mcolors.to_hex(new_rgb) if as_hex else new_rgb
