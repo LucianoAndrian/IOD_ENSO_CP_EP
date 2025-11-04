@@ -3,7 +3,7 @@ Scatter plots
 """
 # ---------------------------------------------------------------------------- #
 save = True
-out_dir = '/home/luciano.andrian/doc/IOD_ENSO_CP_EP/salidas/scatter_cfsv2'
+out_dir = '/home/luciano.andrian/doc/IOD_ENSO_CP_EP/salidas/scatter_cfsv2/'
 # ---------------------------------------------------------------------------- #
 import xarray as xr
 import numpy as np
