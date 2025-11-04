@@ -8,6 +8,7 @@ Sulivan et al. 2016
 # ---------------------------------------------------------------------------- #
 save = False
 plots = False
+out_dir = '/home/luciano.andrian/doc/IOD_ENSO_CP_EP/salidas/tl_obs/'
 
 # ---------------------------------------------------------------------------- #
 import os
@@ -32,8 +33,8 @@ warnings.filterwarnings("ignore")
 # funciones auxiliares ------------------------------------------------------- #
 # funciones tmp_* temporales, no finales
 def tmp_PlotOne(field, levels = np.arange(-1,1.1,0.1), sa=False,
-                extend=None, title='', name_fig='', out_dir='',
-                save=False):
+                extend=None, title='', name_fig='', out_dir=out_dir,
+                save=save):
 
     if save:
         dpi=300
@@ -91,7 +92,12 @@ def tmp_PlotOne(field, levels = np.arange(-1,1.1,0.1), sa=False,
 
 def tmp_PlotTimeSeries(serie1, serie2, serie3, events_select=None,
                        label1='Serie 1', label2='Serie 2', label3='Serie 3',
-                       shift_year=True, title=''):
+                       shift_year=True, title='', save=save, out_dir=out_dir,
+                       name_fig=''):
+    if save:
+        dpi=300
+    else:
+        dpi=100
 
     fig, ax = plt.subplots(figsize=(8, 3))
 
@@ -130,7 +136,11 @@ def tmp_PlotTimeSeries(serie1, serie2, serie3, events_select=None,
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
 
     plt.tight_layout()
-    plt.show()
+    if save:
+        plt.savefig(f'{out_dir}{name_fig}.png', dpi=dpi)
+        plt.close()
+    else:
+        plt.show()
 
 # ---------------------------------------------------------------------------- #
 # Niño 3.4 / ONI para comparar
@@ -167,8 +177,8 @@ pcs = solver.pcs(pcscaling=1)
 var_per = np.around(solver.varianceFraction(neigs=3).values * 100,1)
 
 if plots:
-    tmp_PlotOne(eof_tk[0])
-    tmp_PlotOne(eof_tk[1])
+    tmp_PlotOne(eof_tk[0], save=save, name_fig='tk_eof_1')
+    tmp_PlotOne(eof_tk[1], save=save, name_fig='tk_eof_2')
 
 pc1 = -pcs.sel(mode=0)
 pc2 = -pcs.sel(mode=1)
@@ -176,7 +186,9 @@ pc2 = -pcs.sel(mode=1)
 if plots:
     print(f'var exp {var_per[0]}%')
     tmp_PlotTimeSeries(serie1=n34_son, serie2=pc1, serie3=pc2,
-                   label1='ONI', label2='pc1', label3='pc2', title='')
+                       label1='ONI', label2='pc1', label3='pc2',
+                       title='tk_pcs', name_fig='tk_pcs_comparison',
+                       save=save)
 
 cp_tk = (pc1 + pc2)/np.sqrt(2)
 ep_tk = (pc1 - pc2)/np.sqrt(2)
@@ -192,20 +204,18 @@ if plots:
     corr_ep_cp = np.round(np.corrcoef(ep_tk, cp_tk)[0,1], 3)
 
     tmp_PlotTimeSeries(serie1=n34_son, serie2=cp_tk, serie3=ep_tk,
-                   label1='ONI', label2='CP', label3='EP',
-                   title=f'Takahashi et al. 2011 \n '
-                         f'Correlatinon EP vs CP = {corr_ep_cp}')
+                       label1='ONI', label2='CP', label3='EP',
+                       title=f'Takahashi et al. 2011 \n '
+                             f'Correlatinon EP vs CP = {corr_ep_cp}',
+                       name_fig='tk_ep_cp_comparison_w_r', save=save)
 
-    # PlotOne(pc1_reg_tk, levels=levels)
-    # PlotOne(pc2_reg_tk, levels=levels)
     tmp_PlotOne(cp_reg_tk, levels=levels,
-            title='Regression Coef. CP ENSO - Takahashi et al. 2011',
-            name_fig='cp_tk_obs')
+                title='Regression Coef. CP ENSO - Takahashi et al. 2011',
+                name_fig='cp_tk_obs', save=save)
 
     tmp_PlotOne(ep_reg_tk, levels=levels,
-            title='Regression Coef. EP ENSO - Takahashi et al. 2011',
-            name_fig='ep_tk_obs')
-
+                title='Regression Coef. EP ENSO - Takahashi et al. 2011',
+                name_fig='ep_tk_obs', save=save)
 
 # Tedeschi et al. 2014 ------------------------------------------------------- #
 cp_td = sst.sel(lon=slice(160, 210), lat=slice(5,-5)).mean(['lon', 'lat'])['var']
@@ -216,7 +226,8 @@ if plots:
     tmp_PlotTimeSeries(serie1=n34_son, serie2=cp_td, serie3=ep_td,
                        label1='ONI', label2='CP', label3='EP',
                        title=f'Tedeschi et al. 2014 \n '
-                         f'Correlatinon EP vs CP = {corr_ep_cp}')
+                         f'Correlatinon EP vs CP = {corr_ep_cp}',
+                       name_fig='td_ep_cp_comparison_w_r', save=save)
 
     cp_reg_td = RegreField(sst, cp_td, return_coef=True)
     ep_reg_td = RegreField(sst, ep_td, return_coef=True)
@@ -225,7 +236,7 @@ if plots:
                 name_fig='cp_td_obs')
     tmp_PlotOne(ep_reg_td, levels=levels,
                 title='Regression Coef. EP ENSO - Tedeschi et al. 2014',
-                name_fig='ep_td_obs')
+                name_fig='ep_td_obs', save=save)
 
 # Sulivan et al. 2016 -------------------------------------------------------- #
 n3 = sst.sel(lon=slice(210, 270), lat=slice(5,-5)).mean(['lon', 'lat'])['var']
@@ -242,19 +253,20 @@ cp_n = n4 - 0.5*n3
 if plots:
     corr_ep_cp = np.round(np.corrcoef(ep_n, cp_n)[0,1], 3)
     tmp_PlotTimeSeries(serie1=n34_son, serie2=cp_n, serie3=ep_n,
-                   label1='ONI', label2='CP', label3='EP',
-                   title=f'Sulivan et al. 2016\n '
-                         f'Correlatinon EP vs CP = {corr_ep_cp}')
+                       label1='ONI', label2='CP', label3='EP',
+                       title=f'Sulivan et al. 2016\n '
+                         f'Correlatinon EP vs CP = {corr_ep_cp}',
+                       name_fig='n_ep_cp_comparison_w_r', save=save)
 
     cp_reg_n = RegreField(sst, cp_n, return_coef=True)
     ep_reg_n = RegreField(sst, ep_n, return_coef=True)
     tmp_PlotOne(cp_reg_n, levels=levels,
-            title='Regression Coef. CP ENSO - Sulivan et al. 2016',
-            name_fig='cp_n_obs')
+                title='Regression Coef. CP ENSO - Sulivan et al. 2016',
+                name_fig='cp_n_obs', save=save)
 
     tmp_PlotOne(ep_reg_n, levels=levels,
             title='Regression Coef. EP ENSO - Sulivan et al. 2016',
-            name_fig='ep_n_obs')
+            name_fig='ep_n_obs', save=save)
 
 # ---------------------------------------------------------------------------- #
 # ---------------------------------------------------------------------------- #
