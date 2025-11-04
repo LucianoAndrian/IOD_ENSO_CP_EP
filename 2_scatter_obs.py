@@ -6,11 +6,12 @@ Sulivan et al. 2016
 
 FUNCION DE FIGURAS TEMPORAL, NO DEFINIVITIVA
 """
-# ---------------------------------------------------------------------------- #
-save = False
-out_dir = '/home/luciano.andrian/doc/IOD_ENSO_CP_EP/salidas/'
-# ---------------------------------------------------------------------------- #
 
+# ---------------------------------------------------------------------------- #
+save = True
+out_dir = '/home/luciano.andrian/doc/IOD_ENSO_CP_EP/salidas/scatter_obs/'
+
+# ---------------------------------------------------------------------------- #
 import os
 os.environ['HDF5_USE_FILE_LOCKING'] = 'FALSE'
 import warnings
@@ -20,7 +21,6 @@ warnings.filterwarnings("ignore", category=ShapelyDeprecationWarning)
 warnings.filterwarnings("ignore")
 import matplotlib.pyplot as plt
 from funciones.indices_utils import DMI
-
 
 # ---------------------------------------------------------------------------- #
 def aux_tmp_PlotScatter(idx1, idx2, idx1_name, idx2_name, save=save,
@@ -79,6 +79,7 @@ def aux_tmp_PlotScatter(idx1, idx2, idx1_name, idx2_name, save=save,
         plt.close('all')
     else:
         plt.show()
+
 # ---------------------------------------------------------------------------- #
 from aux_set_obs_indices import cp_tk, ep_tk, cp_td, ep_td, cp_n, ep_n, \ 
     year_end, year_start
@@ -143,5 +144,6 @@ aux_tmp_PlotScatter(idx1=ep_td, idx2=ep_n, idx1_name='EP_tk', idx2_name='EP_n',
 aux_tmp_PlotScatter(idx1=cp_td, idx2=cp_n, idx1_name='CP_td', idx2_name='CP_n',
             save=save, out_dir=out_dir,  name_fig='CP_td_vs_CP_n_obs',
             title='CP_td vs CP_n')
+
 # ---------------------------------------------------------------------------- #
 # ---------------------------------------------------------------------------- #

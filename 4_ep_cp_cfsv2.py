@@ -362,7 +362,6 @@ def PlotScatter(idx1, idx2, idx1_name, idx2_name, save=save,
         plt.show()
 
 # ---------------------------------------------------------------------------- #
-
 sst = xr.open_dataset('/pikachu/datos/luciano.andrian/cases_fields/sst2_son.nc')
 
 # Takahashi et al. 2011 ------------------------------------------------------ #

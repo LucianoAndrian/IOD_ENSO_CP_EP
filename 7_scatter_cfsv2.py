@@ -2,8 +2,8 @@
 Scatter plots
 """
 # ---------------------------------------------------------------------------- #
-save = False
-out_dir = '/home/luciano.andrian/doc/IOD_ENSO_CP_EP/salidas/'
+save = True
+out_dir = '/home/luciano.andrian/doc/IOD_ENSO_CP_EP/salidas/scatter_cfsv2'
 # ---------------------------------------------------------------------------- #
 import xarray as xr
 import numpy as np

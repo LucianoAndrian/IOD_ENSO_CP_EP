@@ -6,8 +6,10 @@ Por ahora, se mantiene el orden de las figuras de 2 filas y 3 columnas
 # ---------------------------------------------------------------------------- #
 save = True
 out_dir = '/home/luciano.andrian/doc/IOD_ENSO_CP_EP/salidas/'
+
 cases_fields = '/pikachu/datos/luciano.andrian/cases_fields_EP_CP/'
 sig_dir = '/pikachu/datos/luciano.andrian/cases_fields_EP_CP/sig/'
+
 # ---------------------------------------------------------------------------- #
 import os
 os.environ['HDF5_USE_FILE_LOCKING'] = 'FALSE'
@@ -213,8 +215,6 @@ def aux_ordenar_sig(sig):
 
     return sig_ordenados
 
-
-
 # ---------------------------------------------------------------------------- #
 variables = ['sst', 'tref', 'prec', 'hgt']
 aux_scales = ['t_comp_cfsv2', 't_comp_cfsv2', 'pp_comp_cfsv2', 'hgt_comp_cfsv2']
@@ -309,4 +309,8 @@ for i in ['tk', 'td', 'n']:
                       data_ctn_no_ocean_mask=True,
                       sig_points=cases_sig, hatches='......')
 
+print('# --------------------------------------------------------------------#')
+print('# --------------------------------------------------------------------#')
+print('done')
+print('# --------------------------------------------------------------------#')
 # ---------------------------------------------------------------------------- #

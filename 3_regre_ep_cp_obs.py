@@ -5,8 +5,9 @@ No se tiene en cuenta el IOD
 FIGURAS TEMPORALES
 """
 # ---------------------------------------------------------------------------- #
-save = False
-out_dir = '/home/luciano.andrian/doc/IOD_ENSO_CP_EP/salidas/'
+save = True
+out_dir = '/home/luciano.andrian/doc/IOD_ENSO_CP_EP/salidas/regre_obs/'
+
 # ---------------------------------------------------------------------------- #
 import xarray as xr
 import numpy as np
@@ -19,8 +20,6 @@ warnings.filterwarnings("ignore", category=ShapelyDeprecationWarning)
 warnings.filterwarnings("ignore")
 from matplotlib import colors
 import matplotlib.pyplot as plt
-
-
 from funciones.plots_utils import SetDataToPlotFinal, PlotFinalTwoVariables, \
     PlotFinal
 from funciones.regre_utils import ComputeWithEffect, ComputeWithoutEffect
@@ -30,6 +29,7 @@ if save:
     dpi = 300
 else:
     dpi = 100
+
 # ---------------------------------------------------------------------------- #
 data_dir_t_pp = '/pikachu/datos/luciano.andrian/observado/ncfiles/' \
                 'data_obs_d_w_c/' #T y PP ya procesados
@@ -160,7 +160,6 @@ scale_hgt=[-300, -270, -240, -210, -180, -150, -120, -90, -60,
 scale_pp = np.array([-45, -30, -20, -10, -2.5, 0, 2.5, 10, 20, 30, 45])
 scale_t = [-1, -0.8, -0.4, -0.2, -0.1, 0, 0.1, 0.2, 0.4, 0.8, 1]
 
-
 cbar = colors.ListedColormap(['#641B00', '#892300', '#9B1C00', '#B9391B',
                               '#CD4838', '#E25E55',
                               '#F28C89', '#FFCECC', '#FFE6E6', 'white',
@@ -172,7 +171,6 @@ cbar.set_over('#4A1500')
 cbar.set_under('#001F3F')
 cbar.set_bad(color='white')
 
-
 cbar_pp = colors.ListedColormap(['#003C30', '#004C42', '#0C7169', '#79C8BC',
                                  '#B4E2DB',
                                  'white',
@@ -181,6 +179,7 @@ cbar_pp = colors.ListedColormap(['#003C30', '#004C42', '#0C7169', '#79C8BC',
 cbar_pp.set_under('#3F2404')
 cbar_pp.set_over('#00221A')
 cbar_pp.set_bad(color='white')
+
 print('Prec y Tref --------------------------------------------------------- #')
 # pp
 prec = xr.open_dataset(f'{data_dir_t_pp}ppgpcc_w_c_d_1_SON.nc')
