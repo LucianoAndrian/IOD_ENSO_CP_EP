@@ -6,7 +6,7 @@ FIGURAS TEMPORALES
 """
 # ---------------------------------------------------------------------------- #
 save = True
-out_dir = '/home/luciano.andrian/doc/IOD_ENSO_CP_EP/salidas/regre_obs/'
+out_dir = '/home/luciano.andrian/doc/IOD_ENSO_CP_EP/salidas/index_regre/regre_obs/'
 
 # ---------------------------------------------------------------------------- #
 import xarray as xr
