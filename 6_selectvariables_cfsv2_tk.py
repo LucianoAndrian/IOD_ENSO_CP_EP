@@ -49,10 +49,6 @@ files = os.listdir(cases_date_dir)
 files = [f for f in files if f.endswith('.nc')]
 div = len(files) // 2
 
-# DMI ------------------------------------------------------------------------ #
-var_file = 'DMI_SON_Leads_r_CFSv2.nc'
-Run(files, var_file, div, data_dir=data_dir_indices)
-
 # EP ------------------------------------------------------------------------- #
 var_file = 'EP_SON_Leads_r_CFSv2.nc'
 Run(files, var_file, div, data_dir=data_dir_indices)
@@ -60,6 +56,11 @@ Run(files, var_file, div, data_dir=data_dir_indices)
 # CP ------------------------------------------------------------------------- #
 var_file = 'CP_SON_Leads_r_CFSv2.nc'
 Run(files, var_file, div, data_dir=data_dir_indices)
+
+# DMI ------------------------------------------------------------------------ #
+var_file = 'DMI_SON_Leads_r_CFSv2.nc'
+aux_data_dir_indices = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/'
+Run(files, var_file, div, data_dir=aux_data_dir_indices)
 
 # SST ------------------------------------------------------------------------ #
 var_file = 'sst_son.nc'
