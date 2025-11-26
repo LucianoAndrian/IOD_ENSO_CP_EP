@@ -215,6 +215,21 @@ def aux_ordenar_sig(sig):
 
     return sig_ordenados
 
+def SigMask(cases, sig):
+    import numpy as np
+    cases_sig = []
+    var_name = list(cases.data_vars)[0]
+    for p in cases.plots:
+        aux_c = cases.sel(plots=p)[var_name]
+        aux_s = sig.sel(plots=p)[var_name]
+
+        aux = aux_c.where((aux_c < aux_s[0]) | (aux_c > aux_s[1]))
+        aux_sig = aux.where(np.isnan(aux), 1)
+
+        cases_sig.append(aux_sig)
+
+    return xr.concat(cases_sig, dim='plots')
+
 # ---------------------------------------------------------------------------- #
 variables = ['sst', 'tref', 'prec', 'hgt']
 aux_scales = ['t_comp_cfsv2', 't_comp_cfsv2', 'pp_comp_cfsv2', 'hgt_comp_cfsv2']
@@ -248,21 +263,6 @@ for i in ['tk', 'td', 'n']:
                                sig=True)
 
             sig_ordenados = aux_ordenar_sig(sig)
-
-            def SigMask(cases, sig):
-                import numpy as np
-                cases_sig = []
-                var_name = list(cases.data_vars)[0]
-                for p in cases.plots:
-                    aux_c = cases.sel(plots=p)[var_name]
-                    aux_s = sig.sel(plots=p)[var_name]
-
-                    aux =  aux_c.where((aux_c < aux_s[0]) | (aux_c > aux_s[1]))
-                    aux_sig = aux.where(np.isnan(aux), 1)
-
-                    cases_sig.append(aux_sig)
-
-                return xr.concat(cases_sig, dim='plots')
 
             cases_sig = SigMask(cases_ordenados, sig_ordenados)
 
