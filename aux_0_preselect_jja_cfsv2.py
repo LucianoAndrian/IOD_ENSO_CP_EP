@@ -17,7 +17,6 @@ out_dir = '/pikachu/datos/luciano.andrian/cases_fields/'
 save_nc = True
 
 variables = ['sst', 'hgt', 'vpot200']
-variables = ['vpot200']
 # ---------------------------------------------------------------------------- #
 for v in variables:
     print(f"{v} ------------------------------------------------------------ #")
@@ -150,11 +149,11 @@ for v in variables:
     jja_hindcast_detrend = \
         xr.open_dataset(f"{out_dir}{v}_aux_hindcast_detrend_jja.nc")
 
-    jja_realtime_no_detrend = Anom_SeasonRealTime(data, jja_clim_99_11, 10)
+    jja_realtime_no_detrend = Anom_SeasonRealTime(data, jja_clim_99_11, 7)
     jja_realtime_no_detrend.load()
 
     jja_realtime_detrend = Anom_Detrend_SeasonRealTime(
-        data, jja_clim_99_11, 10)
+        data, jja_clim_99_11, 7)
     jja_realtime_detrend.load()
 
     print('concat')
