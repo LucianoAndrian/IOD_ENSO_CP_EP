@@ -11,8 +11,20 @@ from funciones.SelectNMME import SelectNMMEFiles
 from funciones.preselect_utils import TwoClim_Anom_Seasons, \
     Anom_SeasonRealTime, Detrend_Seasons, Anom_Detrend_SeasonRealTime, \
     SetDataCFSv2, SplitFilesByMonotonicity, purge_extra_dim
+import logging
 
 # ---------------------------------------------------------------------------- #
+# Logger básico
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(message)s',
+    handlers=[
+        logging.StreamHandler()
+    ]
+)
+
+logger = logging.getLogger(__name__)
+
 out_dir = '/pikachu/datos/luciano.andrian/cases_fields/'
 save_nc = True
 
@@ -20,6 +32,7 @@ variables = ['sst', 'hgt', 'vpot200']
 # ---------------------------------------------------------------------------- #
 for v in variables:
     print(f"{v} ------------------------------------------------------------ #")
+    logger.info(f'variable: {v}')
 
     if v == 'T0995sigma' or v == 'hgt' or v=='hgt750' or v=='vpot200' or v=='sst':
         dir_hc = '/pikachu/datos/luciano.andrian/hindcast/'
@@ -36,7 +49,7 @@ for v in variables:
     # abre TODOS los archivos .nc de la ruta en dir
 
     # HINDCAST -----------------------------------------------------------------
-    print('hindcast')
+    logger.info(f'Hindcast')
     files = SelectNMMEFiles(model_name='NCEP-CFSv2', variable=v,
                             dir=dir_hc, All=True)
     files = sorted(files, key=lambda x: x.split()[0])
@@ -45,13 +58,16 @@ for v in variables:
         ['_2021', '_2022', '_2023', '_2024', '_2025'])]
 
     # Open files --------------------------------------------------------- #
+    logger.info('Hindcast open files:')
     try:
         data = xr.open_mfdataset(files, decode_times=False)
         data = SetDataCFSv2(data, sa)
 
-    except:
-        print('Error en la monotonia de la dimencion S')
-        print('Usando SplitFilesByMonotonicity...')
+    except Exception as e:
+        logger.warning('Error en la monotonía de la dimensión S')
+        logger.warning('Usando SplitFilesByMonotonicity...')
+        logger.warning(f'Error: {e}')
+
         files0, files1 = SplitFilesByMonotonicity(files)
 
         data0 = xr.open_mfdataset(files0, decode_times=False)
@@ -62,9 +78,10 @@ for v in variables:
 
         data = xr.concat([data0, data1], dim='time')
 
-    print('Open files done')
+    logger.info('Hindcast files opened successfully')
 
     # -------------------------------------------------------------------- #
+    logger.info('Hindcast purge_extra_dim')
     data = purge_extra_dim(data, dims_to_keep=['L', 'lat', 'lon', 'r', 'time'])
 
     # -------------------------------------------------------------------- #
@@ -79,6 +96,7 @@ for v in variables:
 
     # - Climatologias y anomalias detrend por seasons --------------------------
     # --------------------------------------------------------------------------
+    logger.info('Hindcast compute...')
     jja_clim_82_98, jja_clim_99_11, jja_anom_82_98, jja_anom_99_11 = \
         TwoClim_Anom_Seasons(data_1982_1998, data_1999_2011, 7)
 
@@ -90,14 +108,22 @@ for v in variables:
     jja_hindcast_detrend = xr.concat(
         [jja_anom_82_98_detrend, jja_anom_99_11_detrend], dim='time')
 
-    jja_hindcast.to_netcdf(f"{out_dir}{v}_aux_hindcast_no_detrend_jja.nc")
-    jja_hindcast_detrend.to_netcdf(f"{out_dir}{v}_aux_hindcast_detrend_jja.nc")
-    jja_clim_99_11.to_netcdf(f"{out_dir}{v}_aux_jja_clim_99_11.nc")
+    logger.info("Saving: no detrend...")
+    jja_hindcast.to_netcdf(f'{out_dir}{v}_aux_hindcast_no_detrend_jja.nc')
+    logger.info("Saved no detrend")
+
+    logger.info('Saving: detrend...')
+    jja_hindcast_detrend.to_netcdf(f'{out_dir}{v}_aux_hindcast_detrend_jja.nc')
+    logger.info('Saved detrend')
+
+    logger.info('Saving: clim...')
+    jja_clim_99_11.to_netcdf(f'{out_dir}{v}_aux_jja_clim_99_11.nc')
+    logger.info('Saved clim')
     del jja_hindcast, jja_clim_82_98, jja_clim_99_11
 
     # --------------------------------------------------------------------------
     # Real-time ----------------------------------------------------------------
-    print('real-time')
+    logger.info('Realtime')
     files = SelectNMMEFiles(model_name='NCEP-CFSv2', variable=v,
                             dir=dir_rt, All=True)
     files = sorted(files, key=lambda x: x.split()[0])
@@ -107,13 +133,16 @@ for v in variables:
         ['_2021', '_2022', '_2023', '_2024', '_2025'])]
 
     # Open files --------------------------------------------------------- #
+    logger.info('realtime open files:')
     try:
         data = xr.open_mfdataset(files, decode_times=False)
         data = SetDataCFSv2(data, sa)
 
     except:
-        print('Error en la monotonia de la dimencion S')
-        print('Usando SplitFilesByMonotonicity...')
+        logger.warning('Error en la monotonía de la dimensión S')
+        logger.warning('Usando SplitFilesByMonotonicity...')
+        logger.warning(f'Error: {e}')
+
         files0, files1 = SplitFilesByMonotonicity(files)
 
         if len(np.intersect1d(files0, files1)) == 0:
@@ -136,6 +165,7 @@ for v in variables:
     print('Open files done')
 
     # ------------------------------------------------------------------------ #
+    logger.info('Realtime purge_extra_dim')
     data = purge_extra_dim(data, dims_to_keep=['L', 'lat', 'lon', 'r', 'time'])
 
     # ------------------------------------------------------------------------ #
@@ -143,20 +173,22 @@ for v in variables:
 
     # - Anomalias detrend por seasons ------------------------------------------
     # --------------------------------------------------------------------------
-    jja_clim_99_11 = xr.open_dataset(f"{out_dir}{v}_aux_jja_clim_99_11.nc")
+    logger.info('Realtime compute...')
+    jja_clim_99_11 = xr.open_dataset(f'{out_dir}{v}_aux_jja_clim_99_11.nc')
     jja_hindcast_no_detrend = \
-        xr.open_dataset(f"{out_dir}{v}_aux_hindcast_no_detrend_jja.nc")
+        xr.open_dataset(f'{out_dir}{v}_aux_hindcast_no_detrend_jja.nc')
     jja_hindcast_detrend = \
-        xr.open_dataset(f"{out_dir}{v}_aux_hindcast_detrend_jja.nc")
+        xr.open_dataset(f'{out_dir}{v}_aux_hindcast_detrend_jja.nc')
 
     jja_realtime_no_detrend = Anom_SeasonRealTime(data, jja_clim_99_11, 7)
+    logger.info('realtime_no_detrend loading')
     jja_realtime_no_detrend.load()
 
     jja_realtime_detrend = Anom_Detrend_SeasonRealTime(
         data, jja_clim_99_11, 7)
     jja_realtime_detrend.load()
 
-    print('concat')
+    logger.info('Concat hindcast + realtime')
     jja_f = xr.concat(
         [jja_hindcast_no_detrend, jja_realtime_no_detrend], dim='time')
     jja_f_detrend = xr.concat(
@@ -164,8 +196,14 @@ for v in variables:
 
     # save ---------------------------------------------------------------------
     if save_nc:
-        jja_f.to_netcdf(f"{out_dir}{v}_jja_no_detrend.nc")
-        jja_f_detrend.to_netcdf(f"{out_dir}{v}_jja_detrend.nc")
+        logger.info('saving nc')
+        logger.info('Saving: no detrend...')
+        jja_f.to_netcdf(f'{out_dir}{v}_jja_no_detrend.nc')
+        logger.info('Saved no detrend')
+        logger.info('Saving: detrend...')
+        jja_f_detrend.to_netcdf(f'{out_dir}{v}_jja_detrend.nc')
+        logger.info('Saved detrend')
+
 
     del jja_realtime_no_detrend, jja_hindcast_no_detrend, data, jja_f, \
         jja_realtime_detrend, jja_hindcast_detrend, jja_f_detrend
