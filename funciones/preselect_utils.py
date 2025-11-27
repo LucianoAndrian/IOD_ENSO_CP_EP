@@ -3,7 +3,8 @@ Funciones para el la seleccion y preprocesamiento de pronosticos del cfsv2
 """
 # ---------------------------------------------------------------------------- #
 import xarray as xr
-
+import warnings
+warnings.filterwarnings("ignore", message="Polyfit may be poorly conditioned")
 # ---------------------------------------------------------------------------- #
 def fix_calendar(ds, timevar='time'):
     """
