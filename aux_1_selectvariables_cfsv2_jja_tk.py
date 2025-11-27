@@ -7,7 +7,6 @@ correspondencia entre los eventos de los índices y los campos seleccionados.
 import xarray as xr
 from multiprocessing import Process
 from funciones.select_variables_cfsv2 import SelectVariables
-import re
 import os
 os.environ['HDF5_USE_FILE_LOCKING'] = 'FALSE'
 # ---------------------------------------------------------------------------- #
@@ -71,3 +70,12 @@ Run(files, var_file, div, data_dir=data_dir)
 # HGT ------------------------------------------------------------------------ #
 var_file = 'hgt_jja_detrend.nc'
 Run(files, var_file, div, data_dir=data_dir)
+
+# vpot ----------------------------------------------------------------------- #
+var_file = 'vpot200_jja_detrend.nc'
+Run(files, var_file, div, data_dir=data_dir)
+
+print('# --------------------------------------------------------------------#')
+print('# --------------------------------------------------------------------#')
+print('done')
+print('# --------------------------------------------------------------------#')

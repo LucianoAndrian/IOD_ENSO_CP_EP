@@ -16,8 +16,8 @@ from funciones.preselect_utils import TwoClim_Anom_Seasons, \
 out_dir = '/pikachu/datos/luciano.andrian/cases_fields/'
 save_nc = True
 
-variables = ['sst']
-
+variables = ['sst', 'hgt', 'vpot200']
+variables = ['vpot200']
 # ---------------------------------------------------------------------------- #
 for v in variables:
     print(f"{v} ------------------------------------------------------------ #")
