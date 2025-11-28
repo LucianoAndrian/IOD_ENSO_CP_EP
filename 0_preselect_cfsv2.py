@@ -7,19 +7,31 @@ Anomalías respecto a la climatologia del hindcast y detrend de las anomalias
 import xarray as xr
 import numpy as np
 from funciones.SelectNMME import SelectNMMEFiles
-from funciones.preselect_utils import fix_calendar, TwoClim_Anom_Seasons, \
+from funciones.preselect_utils import TwoClim_Anom_Seasons, \
     Anom_SeasonRealTime, Detrend_Seasons, Anom_Detrend_SeasonRealTime, \
     SetDataCFSv2, SplitFilesByMonotonicity, purge_extra_dim
+from funciones.general_utils import init_logger
+import warnings
+warnings.simplefilter("ignore")
+
 # ---------------------------------------------------------------------------- #
 out_dir = '/pikachu/datos/luciano.andrian/cases_fields/'
 save_nc = True
 
-variables = ['hgt', 'tref', 'prec', 'hgt750', 'vpot200']
-variables = ['vpot200']
+# ---------------------------------------------------------------------------- #
+logger = init_logger('0_preselect_cfsv2.log')
+
+# ---------------------------------------------------------------------------- #
+# Las que deberian:
+#variables = ['sst', 'hgt', 'tref', 'prec', 'hgt750', 'vpot200']
+# SST ya esta
+#variables = ['hgt', 'tref', 'prec', 'hgt750', 'vpot200']
+# Por ahora:
+variables = ['hgt', 'vpot200']
 
 # ---------------------------------------------------------------------------- #
 for v in variables:
-    print(f"{v} ------------------------------------------------------------ #")
+    logger.info(f'variable: {v}')
 
     if v == 'T0995sigma' or v == 'hgt' or v=='hgt750' or v=='vpot200':
         dir_hc = '/pikachu/datos/luciano.andrian/hindcast/'
@@ -36,7 +48,7 @@ for v in variables:
     # abre TODOS los archivos .nc de la ruta en dir
 
     # HINDCAST -----------------------------------------------------------------
-    print('hindcast')
+    logger.info(f'Hindcast')
     files = SelectNMMEFiles(model_name='NCEP-CFSv2', variable=v,
                             dir=dir_hc, All=True)
     files = sorted(files, key=lambda x: x.split()[0])
@@ -45,13 +57,16 @@ for v in variables:
         ['_2021', '_2022', '_2023', '_2024', '_2025'])]
 
     # Open files --------------------------------------------------------- #
+    logger.info('Hindcast open files:')
     try:
         data = xr.open_mfdataset(files, decode_times=False)
         data = SetDataCFSv2(data, sa)
 
-    except:
-        print('Error en la monotonia de la dimencion S')
-        print('Usando SplitFilesByMonotonicity...')
+    except Exception as e:
+        logger.warning('Error en la monotonía de la dimensión S')
+        logger.warning('Usando SplitFilesByMonotonicity...')
+        logger.warning(f'Error: {e}')
+
         files0, files1 = SplitFilesByMonotonicity(files)
 
         data0 = xr.open_mfdataset(files0, decode_times=False)
@@ -62,9 +77,10 @@ for v in variables:
 
         data = xr.concat([data0, data1], dim='time')
 
-    print('Open files done')
+    logger.info('Hindcast files opened successfully')
 
     # -------------------------------------------------------------------- #
+    logger.info('Hindcast purge_extra_dim')
     data = purge_extra_dim(data, dims_to_keep=['L', 'lat', 'lon', 'r', 'time'])
 
     # -------------------------------------------------------------------- #
@@ -79,6 +95,7 @@ for v in variables:
 
     # - Climatologias y anomalias detrend por seasons --------------------------
     # --------------------------------------------------------------------------
+    logger.info('Hindcast compute...')
     son_clim_82_98, son_clim_99_11, son_anom_82_98, son_anom_99_11 = \
         TwoClim_Anom_Seasons(data_1982_1998, data_1999_2011, 10)
 
@@ -90,14 +107,23 @@ for v in variables:
     son_hindcast_detrend = xr.concat(
         [son_anom_82_98_detrend, son_anom_99_11_detrend], dim='time')
 
+    logger.info("Saving: no detrend...")
     son_hindcast.to_netcdf(f"{out_dir}{v}_aux_hindcast_no_detrend_son.nc")
+    logger.info("Saved no detrend")
+
+    logger.info('Saving: detrend...')
     son_hindcast_detrend.to_netcdf(f"{out_dir}{v}_aux_hindcast_detrend_son.nc")
+    logger.info('Saved detrend')
+
+    logger.info('Saving: clim...')
     son_clim_99_11.to_netcdf(f"{out_dir}{v}_aux_son_clim_99_11.nc")
+    logger.info('Saved clim')
+
     del son_hindcast, son_clim_82_98, son_clim_99_11
 
     # --------------------------------------------------------------------------
     # Real-time ----------------------------------------------------------------
-    print('real-time')
+    logger.info('Realtime')
     files = SelectNMMEFiles(model_name='NCEP-CFSv2', variable=v,
                             dir=dir_rt, All=True)
     files = sorted(files, key=lambda x: x.split()[0])
@@ -107,13 +133,17 @@ for v in variables:
         ['_2021', '_2022', '_2023', '_2024', '_2025'])]
 
     # Open files --------------------------------------------------------- #
+    logger.info('realtime open files:')
     try:
         data = xr.open_mfdataset(files, decode_times=False)
         data = SetDataCFSv2(data, sa)
 
+
     except:
-        print('Error en la monotonia de la dimencion S')
-        print('Usando SplitFilesByMonotonicity...')
+        logger.warning('Error en la monotonía de la dimensión S')
+        logger.warning('Usando SplitFilesByMonotonicity...')
+        logger.warning(f'Error: {e}')
+
         files0, files1 = SplitFilesByMonotonicity(files)
 
         if len(np.intersect1d(files0, files1)) == 0:
@@ -131,11 +161,12 @@ for v in variables:
 
             data = xr.concat([data0, data1], dim='time')
         else:
-            print('Archivos duplicados en la selecciones de RealTime')
+            logger.info('Archivos duplicados en la selecciones de RealTime')
 
-    print('Open files done')
+    logger.info('Realtime files opened successfully')
 
     # ------------------------------------------------------------------------ #
+    logger.info('Realtime purge_extra_dim')
     data = purge_extra_dim(data, dims_to_keep=['L', 'lat', 'lon', 'r', 'time'])
 
     # ------------------------------------------------------------------------ #
@@ -143,6 +174,7 @@ for v in variables:
 
     # - Anomalias detrend por seasons ------------------------------------------
     # --------------------------------------------------------------------------
+    logger.info('Realtime compute...')
     son_clim_99_11 = xr.open_dataset(f"{out_dir}{v}_aux_son_clim_99_11.nc")
     son_hindcast_no_detrend = \
         xr.open_dataset(f"{out_dir}{v}_aux_hindcast_no_detrend_son.nc")
@@ -150,13 +182,14 @@ for v in variables:
         xr.open_dataset(f"{out_dir}{v}_aux_hindcast_detrend_son.nc")
 
     son_realtime_no_detrend = Anom_SeasonRealTime(data, son_clim_99_11, 10)
+    logger.info('realtime_no_detrend loading')
     son_realtime_no_detrend.load()
 
     son_realtime_detrend = Anom_Detrend_SeasonRealTime(
         data, son_clim_99_11, 10)
     son_realtime_detrend.load()
 
-    print('concat')
+    logger.info('Concat hindcast + realtime')
     son_f = xr.concat(
         [son_hindcast_no_detrend, son_realtime_no_detrend], dim='time')
     son_f_detrend = xr.concat(
@@ -164,13 +197,19 @@ for v in variables:
 
     # save ---------------------------------------------------------------------
     if save_nc:
+        logger.info('saving nc')
+        logger.info('Saving: no detrend...')
         son_f.to_netcdf(f"{out_dir}{v}_son_no_detrend.nc")
+        logger.info('Saved no detrend')
+
+        logger.info('Saving: detrend...')
         son_f_detrend.to_netcdf(f"{out_dir}{v}_son_detrend.nc")
+        logger.info('Saved detrend')
 
     del son_realtime_no_detrend, son_hindcast_no_detrend, data, son_f, \
         son_realtime_detrend, son_hindcast_detrend, son_f_detrend
 
-print('# --------------------------------------------------------------------#')
-print('# --------------------------------------------------------------------#')
-print('done')
-print('# --------------------------------------------------------------------#')
+# ---------------------------------------------------------------------------- #
+logger.info('Done')
+
+# ---------------------------------------------------------------------------- #
