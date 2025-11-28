@@ -11,24 +11,20 @@ from funciones.SelectNMME import SelectNMMEFiles
 from funciones.preselect_utils import TwoClim_Anom_Seasons, \
     Anom_SeasonRealTime, Detrend_Seasons, Anom_Detrend_SeasonRealTime, \
     SetDataCFSv2, SplitFilesByMonotonicity, purge_extra_dim
-import logging
+from funciones.general_utils import init_logger
+import warnings
+warnings.simplefilter("ignore")
 
 # ---------------------------------------------------------------------------- #
-# Logger básico
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s [%(levelname)s] %(message)s',
-    handlers=[
-        logging.StreamHandler()
-    ]
-)
-
-logger = logging.getLogger(__name__)
-
 out_dir = '/pikachu/datos/luciano.andrian/cases_fields/'
 save_nc = True
 
+# ---------------------------------------------------------------------------- #
+logger = init_logger('aux_0_preselect_jja_cfsv2.log')
+
+# ---------------------------------------------------------------------------- #
 variables = ['sst', 'hgt', 'vpot200']
+
 # ---------------------------------------------------------------------------- #
 for v in variables:
     print(f"{v} ------------------------------------------------------------ #")
@@ -160,9 +156,9 @@ for v in variables:
 
             data = xr.concat([data0, data1], dim='time')
         else:
-            print('Archivos duplicados en la selecciones de RealTime')
+            logger.info('Archivos duplicados en la selecciones de RealTime')
 
-    print('Open files done')
+    logger.info('Realtime files opened successfully')
 
     # ------------------------------------------------------------------------ #
     logger.info('Realtime purge_extra_dim')
@@ -204,11 +200,10 @@ for v in variables:
         jja_f_detrend.to_netcdf(f'{out_dir}{v}_jja_detrend.nc')
         logger.info('Saved detrend')
 
-
     del jja_realtime_no_detrend, jja_hindcast_no_detrend, data, jja_f, \
         jja_realtime_detrend, jja_hindcast_detrend, jja_f_detrend
 
-print('# --------------------------------------------------------------------#')
-print('# --------------------------------------------------------------------#')
-print('done')
-print('# --------------------------------------------------------------------#')
+# ---------------------------------------------------------------------------- #
+logger.info('Done')
+
+# ---------------------------------------------------------------------------- #
