@@ -4,6 +4,8 @@ Funciones generales
 # ---------------------------------------------------------------------------- #
 import xarray as xr
 import numpy as np
+import logging
+import os
 
 # ---------------------------------------------------------------------------- #
 def xrFieldTimeDetrend(xrda, dim, deg=1):
@@ -84,4 +86,31 @@ def Weights(data):
                                    (len(data.lon), 1)))
     data_w = data * weights
     return data_w
+
+# ---------------------------------------------------------------------------- #
+def init_logger(log_name="app.log", level=logging.INFO):
+    """
+    Inicializa un logger que guarda el log en una carpeta 'logs'
+    ubicada en el mismo directorio del script que lo llama.
+    """
+    # directorio donde está ESTE archivo
+    # y subir un nivel -> directorio raíz del proyecto
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(current_dir)
+
+    log_dir = os.path.join(project_root, "logs")
+    os.makedirs(log_dir, exist_ok=True)
+
+    log_path = os.path.join(log_dir, log_name)
+    logging.basicConfig(
+        level=level,
+        format='%(asctime)s [%(levelname)s] %(message)s',
+        handlers=[
+            logging.FileHandler(log_path),
+            logging.StreamHandler()
+        ]
+    )
+
+    return logging.getLogger(__name__)
+
 # ---------------------------------------------------------------------------- #
