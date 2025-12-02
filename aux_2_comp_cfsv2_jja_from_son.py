@@ -26,11 +26,16 @@ warnings.filterwarnings("ignore")
 from funciones.plots_utils import PlotFinal
 from funciones.general_utils import Weights
 from funciones.scales_and_cbars import get_scales, get_cbars
+from funciones.general_utils import init_logger
+import warnings
+warnings.simplefilter("ignore")
 
 if save:
     dpi = 300
 else:
     dpi = 100
+# ---------------------------------------------------------------------------- #
+logger = init_logger('aux_2_comp_cfsv2_jja_from_son.log')
 
 # aux funciones -------------------------------------------------------------- #
 def Combinations(idx, indices):
@@ -235,15 +240,17 @@ aux_scales = ['t_comp_cfsv2',  'hgt_comp_cfsv2']#, 'vpot200_cfsv2']
 aux_cbar = ['cbar_rdbu', 'cbar_rdbu']#, 'cbar_rdbu']
 
 for i in ['tk']:
+    logger.info(f'Indice {i}')
     i_dir = f'{cases_fields}{i}/'
     s_dir = f'{sig_dir}{i}/'
 
     for v, sc, cb in zip(variables, aux_scales, aux_cbar):
-
+        logger.info(f'Variable {v}')
         scale = get_scales(sc)
         cbar = get_cbars(cb)
 
         for f in ['pos', 'neg']:
+            logger.info(f'fase {f}')
             cases = OpenSetCases(var=v,
                                  idx1='dmi', idx2='ep', idx3='cp',
                                  phase=f,
@@ -305,8 +312,7 @@ for i in ['tk']:
                       data_ctn_no_ocean_mask=True,
                       sig_points=cases_sig, hatches='......')
 
-print('# --------------------------------------------------------------------#')
-print('# --------------------------------------------------------------------#')
-print('done')
-print('# --------------------------------------------------------------------#')
+# ---------------------------------------------------------------------------- #
+logger.info('Done')
+
 # ---------------------------------------------------------------------------- #
