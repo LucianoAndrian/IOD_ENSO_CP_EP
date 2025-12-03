@@ -36,13 +36,13 @@ def Aux_SelectEvents(f, var_file, cases_dir, data_dir, out_dir,
     f_name = f.replace(replace_name, "")
     f_name = f_name.replace('SON', 'JJA_from_SON')
     var_name = var_file.split('_')[0]
+    logger.info(f'saving {out_dir}{var_name}_{f_name}')
     case_events.to_netcdf(f'{out_dir}{var_name}_{f_name}')
 
 def Run(files, var_file, div, cases_dir=cases_date_dir, data_dir=data_dir,
         out_dir=out_dir, replace_name='CFSv2_'):
     logger.info(f'Run()...')
     for i in range(0, len(files), div):
-        logger.info('')
         batch = files[i:i + div]
         processes = [Process(target=Aux_SelectEvents,
                              args=(f, var_file, cases_dir, data_dir, out_dir,
