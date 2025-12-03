@@ -28,6 +28,7 @@ def Aux_SelectEvents(f, var_file, cases_dir, data_dir, out_dir,
                      replace_name):
 
     logger.info(f'{cases_dir}{f}')
+    aux_cases = xr.open_dataset(f'{cases_dir}{f}')
     aux_cases = aux_cases.rename({list(aux_cases.data_vars)[0]:'index'})
 
     data_var = xr.open_dataset(f'{data_dir}{var_file}')
