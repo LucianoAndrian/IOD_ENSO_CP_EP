@@ -27,12 +27,21 @@ logger = init_logger('aux_1_selectvariables_cfsv2_mam_tk.log')
 def Aux_SelectEvents(f, var_file, cases_dir, data_dir, out_dir,
                      replace_name):
 
-    logger.info(f'{cases_dir}{f}')
-    aux_cases = xr.open_dataset(f'{cases_dir}{f}')
-    aux_cases = aux_cases.rename({list(aux_cases.data_vars)[0]:'index'})
+    try:
+        aux_cases = xr.open_dataset(f'{cases_dir}{f}')
+        aux_cases = aux_cases.rename({list(aux_cases.data_vars)[0]:'index'})
+    except Exception as e:
+        logger.error(e)
+        logger.error(f' Error al procesar: {cases_dir}{f}')
+        return
 
-    data_var = xr.open_dataset(f'{data_dir}{var_file}')
-    case_events = SelectVariables(aux_cases, data_var, new_month=4)
+    try:
+        data_var = xr.open_dataset(f'{data_dir}{var_file}')
+        case_events = SelectVariables(aux_cases, data_var, new_month=4)
+    except Exception as e:
+        logger.error(e)
+        logger.error(f' Error al procesar:{data_dir}{var_file}')
+        return
 
     f_name = f.replace(replace_name, "")
     f_name = f_name.replace('SON', 'MAM_from_SON')
