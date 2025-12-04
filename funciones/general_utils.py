@@ -100,8 +100,11 @@ def init_logger(log_name="app.log", level=logging.INFO):
 
     log_dir = os.path.join(project_root, "logs")
     os.makedirs(log_dir, exist_ok=True)
-
     log_path = os.path.join(log_dir, log_name)
+
+    if os.path.exists(log_path):
+        os.remove(log_path)
+
     logging.basicConfig(
         level=level,
         format='%(asctime)s [%(levelname)s] %(message)s',
