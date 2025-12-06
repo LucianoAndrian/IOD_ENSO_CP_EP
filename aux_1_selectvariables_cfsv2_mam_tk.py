@@ -37,7 +37,9 @@ def Aux_SelectEvents(f, var_file, cases_dir, data_dir, out_dir,
 
     try:
         data_var = xr.open_dataset(f'{data_dir}{var_file}')
-        case_events = SelectVariables(aux_cases, data_var, new_month=4)
+        case_events = SelectVariables(aux_cases, data_var,
+                                  original_month=10, new_month=4)
+
     except Exception as e:
         logger.error(e)
         logger.error(f' Error al procesar:{data_dir}{var_file}')
@@ -69,22 +71,24 @@ files = os.listdir(cases_date_dir)
 files = [f for f in files if f.endswith('.nc')]
 div = len(files) // 2
 
+logger.info('Computo sobre indices desabilitados')
 # EP ------------------------------------------------------------------------- #
-logger.info('EP')
-var_file = 'EP_SON_Leads_r_CFSv2.nc'
-Run(files, var_file, div, data_dir=data_dir_indices)
+# logger.info('EP')
+# var_file = 'EP_SON_Leads_r_CFSv2.nc'
+# Run(files, var_file, div, data_dir=data_dir_indices)
 
 # CP ------------------------------------------------------------------------- #
-logger.info('CP')
-var_file = 'CP_SON_Leads_r_CFSv2.nc'
-Run(files, var_file, div, data_dir=data_dir_indices)
+# logger.info('CP')
+# var_file = 'CP_SON_Leads_r_CFSv2.nc'
+# Run(files, var_file, div, data_dir=data_dir_indices)
 
 # DMI ------------------------------------------------------------------------ #
-logger.info('DMI')
-var_file = 'DMI_SON_Leads_r_CFSv2.nc'
-aux_data_dir_indices = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/'
-Run(files, var_file, div, data_dir=aux_data_dir_indices)
+# logger.info('DMI')
+# var_file = 'DMI_SON_Leads_r_CFSv2.nc'
+# aux_data_dir_indices = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/'
+# Run(files, var_file, div, data_dir=aux_data_dir_indices)
 
+logger.info('Computo sobre variables...')
 # SST ------------------------------------------------------------------------ #
 logger.info('SST')
 var_file = 'sst_mam_detrend.nc'
