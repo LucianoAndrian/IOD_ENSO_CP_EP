@@ -21,13 +21,13 @@ def aux_subtract_months_no_360day(date, dif_month):
 
     return type(date.item())(new_y, new_m, d)
 
-def subtract_months(date, new_month):
+def subtract_months(date, original_month, new_month):
+
+    dif_month = original_month - new_month
 
     if isinstance(date, xr.DataArray):
-        dif_month = (date.time.dt.month.values - new_month)
         if isinstance(date.item(), cftime.Datetime360Day):
             new_date = date - timedelta(days=np.int(dif_month*30))
-
         else:
             new_date = aux_subtract_months_no_360day(date, dif_month)
     else:
@@ -36,31 +36,32 @@ def subtract_months(date, new_month):
 
     return new_date
 
-def SelectVariables(dates, data, new_month=None):
 
-    t_count=0
-    t_count_aux = 0
+def SelectVariables(dates, data, original_month=None, new_month=None):
+    data_select = []
+
     for t in dates.index:
         if new_month is not None:
-            t = subtract_months(t, new_month)
+            t = subtract_months(t, original_month, new_month)
 
         try:
             r_t = t.r.values
         except:
-            r_t = dates.r[t_count_aux].values
+            r_t = dates.r[0].values
         L_t = t.L.values
         t_t = t.values
-        try: #q elegancia la de francia...
-            t_t*1
+
+        try:
+            t_t * 1
             t_t = t.time.values
         except:
             pass
 
-        if t_count == 0:
-            aux = data.where(data.L == L_t).sel(r=r_t, time=t_t)
-            t_count += 1
-        else:
-            aux = xr.concat([aux,
-                             data.where(data.L == L_t).sel(r=r_t, time=t_t)],
-                            dim='time')
-    return aux
+        mask = ((data.L == L_t) &
+                (data.r == r_t) &
+                (data.time == t_t))
+
+        selected = data.where(mask, drop=True)
+        data_select.append(selected.isel(r=0))
+
+    return xr.concat(data_select, dim='time')
