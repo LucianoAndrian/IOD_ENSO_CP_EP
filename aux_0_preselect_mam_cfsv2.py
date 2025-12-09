@@ -20,6 +20,14 @@ out_dir = '/pikachu/datos/luciano.andrian/cases_fields/'
 save_nc = True
 
 # ---------------------------------------------------------------------------- #
+def SaveNC(data, dir):
+    logger.info(f'Loading data..')
+    data = data.load()
+    logger.info(f'Saving data..')
+    data.to_netcdf(dir)
+    logger.info('Data saved')
+
+# ---------------------------------------------------------------------------- #
 logger = init_logger('aux_0_preselect_mam_cfsv2.log')
 
 # ---------------------------------------------------------------------------- #
@@ -93,9 +101,11 @@ for v in variables:
     # - Climatologias y anomalias detrend por seasons --------------------------
     # --------------------------------------------------------------------------
     logger.info('Hindcast compute...')
+    logger.info('TwoClim_Anom_Seasons')
     mam_clim_82_98, mam_clim_99_11, mam_anom_82_98, mam_anom_99_11 = \
         TwoClim_Anom_Seasons(data_1982_1998, data_1999_2011, 4)
 
+    logger.info('Detrend_Seasons')
     mam_anom_82_98_detrend, mam_anom_99_11_detrend = \
         Detrend_Seasons(data_1982_1998, data_1999_2011, 4)
 
@@ -105,16 +115,14 @@ for v in variables:
         [mam_anom_82_98_detrend, mam_anom_99_11_detrend], dim='time')
 
     logger.info("Saving: no detrend...")
-    mam_hindcast.to_netcdf(f'{out_dir}{v}_aux_hindcast_no_detrend_mam.nc')
-    logger.info("Saved no detrend")
+    SaveNC(mam_hindcast, f'{out_dir}{v}_aux_hindcast_no_detrend_mam.nc')
 
     logger.info('Saving: detrend...')
-    mam_hindcast_detrend.to_netcdf(f'{out_dir}{v}_aux_hindcast_detrend_mam.nc')
-    logger.info('Saved detrend')
+    SaveNC(mam_hindcast_detrend, f'{out_dir}{v}_aux_hindcast_detrend_mam.nc')
 
     logger.info('Saving: clim...')
-    mam_clim_99_11.to_netcdf(f'{out_dir}{v}_aux_mam_clim_99_11.nc')
-    logger.info('Saved clim')
+    SaveNC(mam_clim_99_11, f'{out_dir}{v}_aux_mam_clim_99_11.nc')
+
     del mam_hindcast, mam_clim_82_98, mam_clim_99_11
 
     # --------------------------------------------------------------------------
@@ -194,11 +202,10 @@ for v in variables:
     if save_nc:
         logger.info('saving nc')
         logger.info('Saving: no detrend...')
-        mam_f.to_netcdf(f'{out_dir}{v}_mam_no_detrend.nc')
-        logger.info('Saved no detrend')
+        SaveNC(mam_f, f'{out_dir}{v}_mam_no_detrend.nc')
+
         logger.info('Saving: detrend...')
-        mam_f_detrend.to_netcdf(f'{out_dir}{v}_mam_detrend.nc')
-        logger.info('Saved detrend')
+        SaveNC(mam_f_detrend, f'{out_dir}{v}_mam_detrend.nc')
 
     del mam_realtime_no_detrend, mam_hindcast_no_detrend, data, mam_f, \
         mam_realtime_detrend, mam_hindcast_detrend, mam_f_detrend

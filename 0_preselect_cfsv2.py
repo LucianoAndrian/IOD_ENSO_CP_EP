@@ -19,6 +19,14 @@ out_dir = '/pikachu/datos/luciano.andrian/cases_fields/'
 save_nc = True
 
 # ---------------------------------------------------------------------------- #
+def SaveNC(data, dir):
+    logger.info(f'Loading data..')
+    data = data.load()
+    logger.info(f'Saving data..')
+    data.to_netcdf(dir)
+    logger.info('Data saved')
+
+# ---------------------------------------------------------------------------- #
 logger = init_logger('0_preselect_cfsv2.log')
 
 # ---------------------------------------------------------------------------- #
@@ -96,9 +104,11 @@ for v in variables:
     # - Climatologias y anomalias detrend por seasons --------------------------
     # --------------------------------------------------------------------------
     logger.info('Hindcast compute...')
+    logger.info('TwoClim_Anom_Seasons')
     son_clim_82_98, son_clim_99_11, son_anom_82_98, son_anom_99_11 = \
         TwoClim_Anom_Seasons(data_1982_1998, data_1999_2011, 10)
 
+    logger.info('Detrend_Seasons')
     son_anom_82_98_detrend, son_anom_99_11_detrend = \
         Detrend_Seasons(data_1982_1998, data_1999_2011, 10)
 
@@ -107,17 +117,14 @@ for v in variables:
     son_hindcast_detrend = xr.concat(
         [son_anom_82_98_detrend, son_anom_99_11_detrend], dim='time')
 
-    logger.info("Saving: no detrend...")
-    son_hindcast.to_netcdf(f"{out_dir}{v}_aux_hindcast_no_detrend_son.nc")
-    logger.info("Saved no detrend")
+    logger.info('Saving: no detrend...')
+    SaveNC(son_hindcast, f'{out_dir}{v}_aux_hindcast_no_detrend_son.nc')
 
     logger.info('Saving: detrend...')
-    son_hindcast_detrend.to_netcdf(f"{out_dir}{v}_aux_hindcast_detrend_son.nc")
-    logger.info('Saved detrend')
+    SaveNC(son_hindcast_detrend, f'{out_dir}{v}_aux_hindcast_detrend_son.nc')
 
     logger.info('Saving: clim...')
-    son_clim_99_11.to_netcdf(f"{out_dir}{v}_aux_son_clim_99_11.nc")
-    logger.info('Saved clim')
+    SaveNC(son_clim_99_11, f'{out_dir}{v}_aux_son_clim_99_11.nc')
 
     del son_hindcast, son_clim_82_98, son_clim_99_11
 
@@ -137,7 +144,6 @@ for v in variables:
     try:
         data = xr.open_mfdataset(files, decode_times=False)
         data = SetDataCFSv2(data, sa)
-
 
     except:
         logger.warning('Error en la monotonía de la dimensión S')
@@ -199,12 +205,10 @@ for v in variables:
     if save_nc:
         logger.info('saving nc')
         logger.info('Saving: no detrend...')
-        son_f.to_netcdf(f"{out_dir}{v}_son_no_detrend.nc")
-        logger.info('Saved no detrend')
+        SaveNC(son_f, f"{out_dir}{v}_son_no_detrend.nc")
 
         logger.info('Saving: detrend...')
-        son_f_detrend.to_netcdf(f"{out_dir}{v}_son_detrend.nc")
-        logger.info('Saved detrend')
+        SaveNC(son_f_detrend,f"{out_dir}{v}_son_detrend.nc")
 
     del son_realtime_no_detrend, son_hindcast_no_detrend, data, son_f, \
         son_realtime_detrend, son_hindcast_detrend, son_f_detrend

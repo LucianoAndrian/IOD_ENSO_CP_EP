@@ -20,6 +20,14 @@ out_dir = '/pikachu/datos/luciano.andrian/cases_fields/'
 save_nc = True
 
 # ---------------------------------------------------------------------------- #
+def SaveNC(data, dir):
+    logger.info(f'Loading data..')
+    data = data.load()
+    logger.info(f'Saving data..')
+    data.to_netcdf(dir)
+    logger.info('Data saved')
+
+# ---------------------------------------------------------------------------- #
 logger = init_logger('aux_0_preselect_jja_cfsv2.log')
 
 # ---------------------------------------------------------------------------- #
@@ -93,9 +101,11 @@ for v in variables:
     # - Climatologias y anomalias detrend por seasons --------------------------
     # --------------------------------------------------------------------------
     logger.info('Hindcast compute...')
+    logger.info('TwoClim_Anom_Seasons')
     jja_clim_82_98, jja_clim_99_11, jja_anom_82_98, jja_anom_99_11 = \
         TwoClim_Anom_Seasons(data_1982_1998, data_1999_2011, 7)
 
+    logger.info('Detrend_Seasons')
     jja_anom_82_98_detrend, jja_anom_99_11_detrend = \
         Detrend_Seasons(data_1982_1998, data_1999_2011, 7)
 
@@ -105,16 +115,14 @@ for v in variables:
         [jja_anom_82_98_detrend, jja_anom_99_11_detrend], dim='time')
 
     logger.info("Saving: no detrend...")
-    jja_hindcast.to_netcdf(f'{out_dir}{v}_aux_hindcast_no_detrend_jja.nc')
-    logger.info("Saved no detrend")
+    SaveNC(jja_hindcast, f'{out_dir}{v}_aux_hindcast_no_detrend_jja.nc')
 
     logger.info('Saving: detrend...')
-    jja_hindcast_detrend.to_netcdf(f'{out_dir}{v}_aux_hindcast_detrend_jja.nc')
-    logger.info('Saved detrend')
+    SaveNC(jja_hindcast_detrend, f'{out_dir}{v}_aux_hindcast_detrend_jja.nc')
 
     logger.info('Saving: clim...')
-    jja_clim_99_11.to_netcdf(f'{out_dir}{v}_aux_jja_clim_99_11.nc')
-    logger.info('Saved clim')
+    SaveNC(jja_clim_99_11, f'{out_dir}{v}_aux_jja_clim_99_11.nc')
+
     del jja_hindcast, jja_clim_82_98, jja_clim_99_11
 
     # --------------------------------------------------------------------------
@@ -194,11 +202,10 @@ for v in variables:
     if save_nc:
         logger.info('saving nc')
         logger.info('Saving: no detrend...')
-        jja_f.to_netcdf(f'{out_dir}{v}_jja_no_detrend.nc')
-        logger.info('Saved no detrend')
+        SaveNC(jja_f, f'{out_dir}{v}_jja_no_detrend.nc')
+
         logger.info('Saving: detrend...')
-        jja_f_detrend.to_netcdf(f'{out_dir}{v}_jja_detrend.nc')
-        logger.info('Saved detrend')
+        SaveNC(jja_f_detrend, f'{out_dir}{v}_jja_detrend.nc')
 
     del jja_realtime_no_detrend, jja_hindcast_no_detrend, data, jja_f, \
         jja_realtime_detrend, jja_hindcast_detrend, jja_f_detrend

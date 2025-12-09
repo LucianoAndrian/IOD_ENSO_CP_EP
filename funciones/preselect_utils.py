@@ -15,7 +15,10 @@ def fix_calendar(ds, timevar='time'):
     return ds
 
 def TwoClim_Anom_Seasons(data_1982_1998, data_1999_2011, main_month_season):
-
+    season_clim_1982_1998 = []
+    season_clim_1999_2011 = []
+    season_anom_1982_1998 = []
+    season_anom_1999_2011 = []
     for l in [0,1,2,3]:
         season_1982_1998 = \
             data_1982_1998.sel(
@@ -26,54 +29,45 @@ def TwoClim_Anom_Seasons(data_1982_1998, data_1999_2011, main_month_season):
                 time=data_1999_2011.time.dt.month.isin(main_month_season-l),
                 L=l)
 
-        if l==0:
-            season_clim_1982_1998 = season_1982_1998.mean(['r', 'time'])
-            season_clim_1999_2011 = season_1999_2011.mean(['r', 'time'])
+        season_clim_1982_1998_L = season_1982_1998.mean(['r', 'time'])
+        season_clim_1999_2011_L = season_1999_2011.mean(['r', 'time'])
 
-            season_anom_1982_1998 = season_1982_1998 - season_clim_1982_1998
-            season_anom_1999_2011 = season_1999_2011 - season_clim_1999_2011
-        else:
-            season_clim_1982_1998 = \
-                xr.concat([season_clim_1982_1998,
-                           season_1982_1998.mean(['r', 'time'])], dim='L')
-            season_clim_1999_2011 = \
-                xr.concat([season_clim_1999_2011,
-                           season_1999_2011.mean(['r', 'time'])], dim='L')
+        season_anom_1982_1998_L = season_1982_1998 - season_clim_1982_1998_L
+        season_anom_1999_2011_L = season_1999_2011 - season_clim_1999_2011_L
 
-            aux_1982_1998 = \
-                season_1982_1998 - season_1982_1998.mean(['r', 'time'])
-            aux_1999_2011 = \
-                season_1999_2011 - season_1999_2011.mean(['r', 'time'])
+        season_clim_1982_1998.append(season_clim_1982_1998_L)
+        season_clim_1999_2011.append(season_clim_1999_2011_L)
+        season_anom_1982_1998.append(season_anom_1982_1998_L)
+        season_anom_1999_2011.append(season_anom_1999_2011_L)
 
-            season_anom_1982_1998 = \
-                xr.concat([season_anom_1982_1998, aux_1982_1998], dim='time')
-            season_anom_1999_2011 =\
-                xr.concat([season_anom_1999_2011, aux_1999_2011], dim='time')
+    season_clim_1982_1998 = xr.concat(season_clim_1982_1998, dim='L')
+    season_clim_1999_2011 = xr.concat(season_clim_1999_2011, dim='L')
+    season_anom_1982_1998 = xr.concat(season_anom_1982_1998, dim='time')
+    season_anom_1999_2011 = xr.concat(season_anom_1999_2011, dim='time')
 
     return season_clim_1982_1998, season_clim_1999_2011,\
            season_anom_1982_1998, season_anom_1999_2011
 
 def Anom_SeasonRealTime(data_realtime, season_clim_1999_2011,
                                 main_month_season):
-
+    season_anom = []
     for l in [0,1,2,3]:
         season_data = data_realtime.sel(
             time=data_realtime.time.dt.month.isin(main_month_season-l), L=l)
         aux_season_clim_1999_2011 = season_clim_1999_2011.sel(L=l)
 
         #Anomalia
-        season_anom = season_data - aux_season_clim_1999_2011
+        season_anom.append(season_data - aux_season_clim_1999_2011)
 
-        if l==0:
-            season_anom_f = season_anom
-        else:
-            season_anom_f = xr.concat([season_anom_f, season_anom], dim='time')
+    season_anom = xr.concat(season_anom, dim='time')
 
-    return season_anom_f
+    return season_anom
 
 def Detrend_Seasons(season_anom_1982_1998, season_anom_1999_2011,
                     main_month_season):
 
+    season_anom_1982_1998_detrend = []
+    season_anom_1999_2011_detrend = []
     for l in [0,1,2,3]:
         #1982-1998
         aux_season_anom_1982_1998 = season_anom_1982_1998.sel(
@@ -84,16 +78,10 @@ def Detrend_Seasons(season_anom_1982_1998, season_anom_1999_2011,
         aux_trend = xr.polyval(
             aux_season_anom_1982_1998['time'], aux[list(aux.data_vars)[0]])
 
-        if l == 0:
-            season_anom_1982_1998_detrened = \
-                aux_season_anom_1982_1998 - aux_trend
-        else:
-            aux_detrend = aux_season_anom_1982_1998 - aux_trend
-            season_anom_1982_1998_detrened = \
-                xr.concat([season_anom_1982_1998_detrened, aux_detrend],
-                          dim='time')
+        season_anom_1982_1998_detrend.append(
+            aux_season_anom_1982_1998 - aux_trend)
 
-    # 1999-2011
+        # 1999-2011
         aux_season_anom_1999_2011 = season_anom_1999_2011.sel(
             time=season_anom_1999_2011.time.dt.month.isin(main_month_season - l),
         L=l)
@@ -101,19 +89,20 @@ def Detrend_Seasons(season_anom_1982_1998, season_anom_1999_2011,
         aux = aux_season_anom_1999_2011.mean('r').polyfit(dim='time', deg=1)
         aux_trend = xr.polyval(
             aux_season_anom_1999_2011['time'], aux[list(aux.data_vars)[0]])
-        if l==0:
-            season_anom_1999_2011_detrend = \
-                aux_season_anom_1999_2011 - aux_trend
-        else:
-            aux_detrend = aux_season_anom_1999_2011 - aux_trend
-            season_anom_1999_2011_detrend = xr.concat(
-                [season_anom_1999_2011_detrend, aux_detrend], dim='time')
 
-    return season_anom_1982_1998_detrened, season_anom_1999_2011_detrend
+        season_anom_1999_2011_detrend.append(
+            aux_season_anom_1999_2011 - aux_trend)
+
+    season_anom_1982_1998_detrend = xr.concat(season_anom_1982_1998_detrend,
+                                              dim='time')
+    season_anom_1999_2011_detrend = xr.concat(season_anom_1999_2011_detrend,
+                                              dim='time')
+
+    return season_anom_1982_1998_detrend, season_anom_1999_2011_detrend
 
 def Anom_Detrend_SeasonRealTime(data_realtime, season_clim_1999_2011,
                                 main_month_season):
-
+    season_anom_detrend = []
     for l in [0,1,2,3]:
         season_data = data_realtime.sel(
             time=data_realtime.time.dt.month.isin(main_month_season-l), L=l)
@@ -127,12 +116,9 @@ def Anom_Detrend_SeasonRealTime(data_realtime, season_clim_1999_2011,
         aux_trend = xr.polyval(
             season_anom['time'], aux[list(aux.data_vars)[0]])
 
-        if l==0:
-            season_anom_detrend = season_anom - aux_trend
-        else:
-            aux_detrend = season_anom - aux_trend
-            season_anom_detrend = xr.concat(
-                [season_anom_detrend, aux_detrend], dim='time')
+        season_anom_detrend.append(season_anom - aux_trend)
+
+    season_anom_detrend = xr.concat(season_anom_detrend, dim='time')
 
     return season_anom_detrend
 
