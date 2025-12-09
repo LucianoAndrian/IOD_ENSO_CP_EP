@@ -4,7 +4,7 @@ Composites con el modelo CFSv2
 Por ahora, se mantiene el orden de las figuras de 2 filas y 3 columnas
 """
 # ---------------------------------------------------------------------------- #
-save = False
+save = True
 out_dir = '/home/luciano.andrian/doc/IOD_ENSO_CP_EP/salidas/'
 
 cases_fields = '/pikachu/datos/luciano.andrian/cases_fields_EP_CP/'
@@ -309,7 +309,7 @@ for i in ['tk']:
                 ocean_mask = False
                 high = 1.3
 
-            name_fig = f'comp_{i}/comp_{i}_{v}_{f}'
+            name_fig = f'comp_{i}/comp_{i}_mam_{v}_{f}'
             PlotFinal(data=cases_ordenados, levels=scale, cmap=cbar,
                       titles=titles, namefig=name_fig, map=map,
                       save=save, dpi=dpi, out_dir=out_dir,
