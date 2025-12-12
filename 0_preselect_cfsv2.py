@@ -31,12 +31,7 @@ logger = init_logger('0_preselect_cfsv2.log')
 
 # ---------------------------------------------------------------------------- #
 # Las que deberian:
-#variables = ['sst', 'hgt', 'tref', 'prec', 'hgt750', 'vpot200']
-# SST ya esta
-#variables = ['hgt', 'tref', 'prec', 'hgt750', 'vpot200']
-# Por ahora:
-variables = ['hgt', 'vpot200']
-
+variables = ['sst', 'hgt', 'tref', 'prec', 'hgt750']
 # ---------------------------------------------------------------------------- #
 for v in variables:
     logger.info(f'variable: {v}')
@@ -145,7 +140,7 @@ for v in variables:
         data = xr.open_mfdataset(files, decode_times=False)
         data = SetDataCFSv2(data, sa)
 
-    except:
+    except Exception as e:
         logger.warning('Error en la monotonía de la dimensión S')
         logger.warning('Usando SplitFilesByMonotonicity...')
         logger.warning(f'Error: {e}')
