@@ -4,7 +4,7 @@ Composites con el modelo CFSv2
 Por ahora, se mantiene el orden de las figuras de 2 filas y 3 columnas
 """
 # ---------------------------------------------------------------------------- #
-save = True
+save = False
 out_dir = '/home/luciano.andrian/doc/IOD_ENSO_CP_EP/salidas/'
 
 cases_fields = '/pikachu/datos/luciano.andrian/cases_fields_EP_CP/'
@@ -54,7 +54,8 @@ def Combinations(idx, indices):
 
     return idx, idx_aux2, idx_aux3
 
-def OpenSetCases(var, idx1, idx2, idx3, phase, dir, sig=False):
+def OpenSetCases(var, idx1, idx2, idx3, phase, dir, sig=False,
+                 trim='JJA_from_SON'):
 
     if 'prec' in var:
         fix = 30
@@ -68,13 +69,14 @@ def OpenSetCases(var, idx1, idx2, idx3, phase, dir, sig=False):
     idx2 = idx2.lower()
     idx3 = idx3.lower()
 
+
     if sig is True:
         var = f'QT_{var}'
 
     cases = {}
     # neutro
     if sig is False:
-        cases['neutros'] = xr.open_dataset(f'{dir}{var}_neutros_JJA_from_SON.nc') * fix
+        cases['neutros'] = xr.open_dataset(f'{dir}{var}_neutros_{trim}.nc') * fix
 
     indices = [idx1, idx2, idx3]
 
@@ -86,17 +88,17 @@ def OpenSetCases(var, idx1, idx2, idx3, phase, dir, sig=False):
 
         # puro
         cases[i]['puros'] = xr.open_dataset(
-            f'{dir}{var}_puros_{i}_{phase}_JJA_from_SON.nc') * fix
+            f'{dir}{var}_puros_{i}_{phase}_{trim}.nc') * fix
 
         # doble
         try:
             doble_2 = xr.open_dataset(
                 f'{dir}{var}_simultaneos_dobles_{i}_{idx_aux2}_{phase}'
-                f'_JJA_from_SON.nc') * fix
+                f'_{trim}.nc') * fix
 
             doble_3 = xr.open_dataset(
                 f'{dir}{var}_simultaneos_dobles_{i}_{idx_aux3}_{phase}'
-                f'_JJA_from_SON.nc') * fix
+                f'_{trim}.nc') * fix
 
             cases[i]['dobles'] = {}
             cases[i]['dobles'][idx_aux2] = doble_2
@@ -109,7 +111,7 @@ def OpenSetCases(var, idx1, idx2, idx3, phase, dir, sig=False):
             # hay uno solo
             triple = xr.open_dataset(
                 f'{dir}{var}_simultaneos_triples_{i}_{idx_aux2}_{idx_aux3}'
-                f'_{phase}_JJA_from_SON.nc') * fix
+                f'_{phase}_{trim}.nc') * fix
 
             cases[i]['triples'] = {}
             cases[i]['triples'] = triple
@@ -234,6 +236,7 @@ def SigMask(cases, sig):
         cases_sig.append(aux_sig)
 
     return xr.concat(cases_sig, dim='plots')
+
 # ---------------------------------------------------------------------------- #
 variables = ['sst', 'hgt']#, 'vpot200']
 aux_scales = ['t_comp_cfsv2',  'hgt_comp_cfsv2']#, 'vpot200_cfsv2']
@@ -251,6 +254,7 @@ for i in ['tk']:
 
         for f in ['pos', 'neg']:
             logger.info(f'fase {f}')
+            logger.info(f'Cases JJA {f}')
             cases = OpenSetCases(var=v,
                                  idx1='dmi', idx2='ep', idx3='cp',
                                  phase=f,
@@ -268,6 +272,14 @@ for i in ['tk']:
             #
             # cases_sig = SigMask(cases_ordenados, sig_ordenados)
             cases_sig = None
+
+            # ---------------------------------------------------------------- #
+            # logger.info(f'Cases SON to select OBS {f}')
+            # cases_son = OpenSetCases(var=v,
+            #                      idx1='dmi', idx2='ep', idx3='cp',
+            #                      phase=f,
+            #                      dir=i_dir,
+            #                      trim='SON')
 
             if v == 'tref' or v == 'prec':
                 map = 'sa'

@@ -25,14 +25,20 @@ logger = init_logger('aux_1_selectvariables_cfsv2_jja_tk.log')
 
 # Funcion -------------------------------------------------------------------- #
 def Aux_SelectEvents(f, var_file, cases_dir, data_dir, out_dir,
-                     replace_name):
+                     replace_name, new_month, new_L=0):
 
     aux_cases = xr.open_dataset(f'{cases_dir}{f}')
     aux_cases = aux_cases.rename({list(aux_cases.data_vars)[0]:'index'})
+    aux_cases_selected = aux_cases.sel(
+        time=aux_cases.time.dt.month.isin(new_month))
+    len_L = len(aux_cases_selected.L)
+    aux_cases_selected['L'] = [new_L]*len_L
+    aux_cases_selected = aux_cases_selected.assign_coords(
+        L=("time", aux_cases_selected.L.values)
+    )
 
     data_var = xr.open_dataset(f'{data_dir}{var_file}')
-    case_events = SelectVariables(aux_cases, data_var,
-                                  original_month=10, new_month=7)
+    case_events = SelectVariables(aux_cases_selected, data_var)
 
     f_name = f.replace(replace_name, "")
     f_name = f_name.replace('SON', 'JJA_from_SON')
@@ -40,14 +46,14 @@ def Aux_SelectEvents(f, var_file, cases_dir, data_dir, out_dir,
     logger.info(f'saving {out_dir}{var_name}_{f_name}')
     case_events.to_netcdf(f'{out_dir}{var_name}_{f_name}')
 
-def Run(files, var_file, div, cases_dir=cases_date_dir, data_dir=data_dir,
-        out_dir=out_dir, replace_name='CFSv2_'):
+def Run(files, var_file, div, new_month, new_L, cases_dir=cases_date_dir,
+        data_dir=data_dir, out_dir=out_dir, replace_name='CFSv2_'):
     logger.info(f'Run()...')
     for i in range(0, len(files), div):
         batch = files[i:i + div]
         processes = [Process(target=Aux_SelectEvents,
                              args=(f, var_file, cases_dir, data_dir, out_dir,
-                                   replace_name))
+                                   replace_name, new_month, new_L))
                      for f in batch]
 
         for p in processes:
@@ -78,20 +84,22 @@ logger.info('Computo sobre indices desabilitados')
 # Run(files, var_file, div, data_dir=aux_data_dir_indices)
 
 logger.info('Computo sobre variables...')
+new_month=7
+new_L=0
 # SST ------------------------------------------------------------------------ #
 logger.info('SST')
 var_file = 'sst_jja_detrend.nc'
-Run(files, var_file, div, data_dir=data_dir)
+Run(files, var_file, div, new_month, new_L, data_dir=data_dir)
 
 # HGT ------------------------------------------------------------------------ #
 logger.info('HGT')
 var_file = 'hgt_jja_detrend.nc'
-Run(files, var_file, div, data_dir=data_dir)
+Run(files, var_file, div, new_month, new_L, data_dir=data_dir)
 
 # vpot ----------------------------------------------------------------------- #
 logger.info('VPOT200')
 var_file = 'vpot200_jja_detrend.nc'
-Run(files, var_file, div, data_dir=data_dir)
+Run(files, var_file, div, new_month, new_L, data_dir=data_dir)
 
 # ---------------------------------------------------------------------------- #
 logger.info('Done')

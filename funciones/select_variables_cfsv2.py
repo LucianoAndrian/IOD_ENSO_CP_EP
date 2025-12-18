@@ -37,12 +37,10 @@ def subtract_months(date, original_month, new_month):
     return new_date
 
 
-def SelectVariables(dates, data, original_month=None, new_month=None):
+def SelectVariables(dates, data):
     data_select = []
 
     for t in dates.index:
-        if new_month is not None:
-            t = subtract_months(t, original_month, new_month)
 
         try:
             r_t = t.r.values
