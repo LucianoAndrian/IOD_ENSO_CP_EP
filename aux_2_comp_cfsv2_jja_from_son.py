@@ -295,7 +295,7 @@ for i in ['tk']:
                 ocean_mask = True
                 high = 3
 
-            elif v == 's2st':
+            elif v == 'sst':
                 aux_cases = OpenSetCases(var='vpot200',
                                             idx1='dmi', idx2='ep', idx3='cp',
                                             phase=f,
