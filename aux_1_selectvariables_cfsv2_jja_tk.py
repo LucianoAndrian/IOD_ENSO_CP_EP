@@ -14,6 +14,7 @@ import warnings
 warnings.simplefilter("ignore")
 
 from funciones.set_sst_obs import sst
+from funciones.set_hgt_obs import hgt
 import cftime
 
 # ---------------------------------------------------------------------------- #
@@ -22,7 +23,7 @@ out_dir = '/pikachu/datos/luciano.andrian/cases_fields_EP_CP/tk/'
 cases_date_dir = '/pikachu/datos/luciano.andrian/cases_dates_EP_CP/tk/'
 data_dir = '/pikachu/datos/luciano.andrian/cases_fields/'
 data_dir_indices = '/pikachu/datos/luciano.andrian/DMI_N34_Leads_r/tk/'
-
+dir_data_obs='/pikachu/datos/luciano.andrian/observado/ncfiles/ERA5/1940_2020/'
 # ---------------------------------------------------------------------------- #
 logger = init_logger('aux_1_selectvariables_cfsv2_jja_tk.log')
 
@@ -53,8 +54,12 @@ def Aux_SelectEvents(f, var_file, cases_dir, data_dir, out_dir,
 
     if obs_var is not None:
 
-        obs_selected = obs_var.sel(time=obs_var.time.dt.month.isin(new_month),
-                                   month=new_month)
+        try:
+            obs_selected = obs_var.sel(
+                time=obs_var.time.dt.month.isin(new_month), month=new_month)
+        except:
+            obs_selected = obs_var.sel(
+                time=obs_var.time.dt.month.isin(new_month))
 
         obs_var = list(obs_selected.data_vars)[0]
 
@@ -146,14 +151,15 @@ var_file = 'sst_jja_detrend.nc'
 Run(files, var_file, div, new_month, new_L, data_dir=data_dir, obs_var=sst)
 
 # HGT ------------------------------------------------------------------------ #
-# logger.info('HGT')
-# var_file = 'hgt_jja_detrend.nc'
-# Run(files, var_file, div, new_month, new_L, data_dir=data_dir)
+hgt = xr.open_dataset(f'{dir_data_obs}HGT200_JJA_mer_d_w.nc')
+logger.info('HGT')
+var_file = 'hgt_jja_detrend.nc'
+Run(files, var_file, div, new_month, new_L, data_dir=data_dir, obs_var=hgt)
 
 # vpot ----------------------------------------------------------------------- #
-logger.info('VPOT200')
-var_file = 'vpot200_jja_detrend.nc'
-Run(files, var_file, div, new_month, new_L, data_dir=data_dir)
+# logger.info('VPOT200')
+# var_file = 'vpot200_jja_detrend.nc'
+# Run(files, var_file, div, new_month, new_L, data_dir=data_dir)
 
 # ---------------------------------------------------------------------------- #
 logger.info('Done')
