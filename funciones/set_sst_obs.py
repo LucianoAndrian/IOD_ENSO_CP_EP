@@ -15,7 +15,8 @@ year_end = 2020
 data_dir = '/pikachu/datos/luciano.andrian/verif_2019_2023/'
 
 # ---------------------------------------------------------------------------- #
-logger = init_logger('funciones.set_sst_obs.py')
+import logging
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------- #
 output_exists = os.path.isfile(f'{out_dir}sst_jja_1959-2020.nc')

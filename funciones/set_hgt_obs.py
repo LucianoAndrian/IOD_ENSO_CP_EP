@@ -15,7 +15,8 @@ year_end = 2020
 data_dir = '/pikachu/datos/luciano.andrian/observado/ncfiles/ERA5/downloaded/'
 
 # ---------------------------------------------------------------------------- #
-logger = init_logger('funciones.set_hgt_obs.py')
+import logging
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------- #
 output_exists = os.path.isfile(f'{out_dir}hgt_jja_1959-2020.nc')
@@ -45,6 +46,7 @@ if output_exists is False:
     del hgt, hgt_or
 
 hgt = xr.open_dataset(f'{out_dir}hgt_jja_1959-2020.nc')
+
 
 
 

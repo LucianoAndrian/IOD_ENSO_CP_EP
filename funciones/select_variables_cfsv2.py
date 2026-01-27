@@ -62,4 +62,9 @@ def SelectVariables(dates, data):
         selected = data.where(mask, drop=True)
         data_select.append(selected.isel(r=0))
 
-    return xr.concat(data_select, dim='time')
+    try:
+        out_put = xr.concat(data_select, dim='time')
+    except:
+        out_put = None
+
+    return out_put
