@@ -314,7 +314,7 @@ for i in ['tk']:
                 ocean_mask = False
                 high = 1.3
 
-            name_fig = f'comp_{i}/comp_{i}_jja_{v}_{f}'
+            name_fig = f'comp_{i}/comp_{i}_jja_{v}_{f}_multi_obs'
             PlotFinal(data=cases_ordenados, levels=scale, cmap=cbar,
                       titles=titles, namefig=name_fig, map=map,
                       save=save, dpi=dpi, out_dir=out_dir,

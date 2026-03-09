@@ -4,6 +4,7 @@ A partir de los sst_* salida de 2_CFSv2_DMI_N34.py ara asegurar
 correspondencia entre los eventos de los índices y los campos seleccionados.
 """
 # ---------------------------------------------------------------------------- #
+import numpy as np
 import xarray as xr
 from multiprocessing import Process
 from funciones.select_variables_cfsv2 import SelectVariables
@@ -17,7 +18,6 @@ warnings.simplefilter("ignore")
 from funciones.set_sst_obs import sst
 from funciones.set_hgt_obs import hgt
 from funciones.set_vp_obs import vp
-vp = vp.sel(variable='var')
 import cftime
 
 # ---------------------------------------------------------------------------- #
@@ -32,7 +32,7 @@ logger = init_logger('aux_1_selectvariables_cfsv2_jja_tk.log')
 
 # Funcion -------------------------------------------------------------------- #
 def Aux_SelectEvents(f, var_file, cases_dir, data_dir, out_dir,
-                     replace_name, new_month, new_L=0, mode_single_obs=False,
+                     replace_name, new_month, new_L=0, mode_single_obs=True,
                      obs_var=None):
 
     logger.debug('Setting case data')
@@ -58,15 +58,16 @@ def Aux_SelectEvents(f, var_file, cases_dir, data_dir, out_dir,
             aux_cases_no_new_month = aux_cases.sel(
                 time=aux_cases.time.dt.month != new_month)
             cfsv2_years_no_new_month = aux_cases_no_new_month.time.dt.year
-            import numpy as np
-            #print(f'{f}, {len(np.unique(cfsv2_years_no_new_month))}')
+
             try:
                 obs_selected = obs_var.sel(
-                    time=obs_var.time.dt.month.isin(new_month), month=new_month)
+                    time=obs_var.time.dt.month.isin(new_month),
+                    month=new_month)
+                logger.debug('Set obs data done with option 1')
             except:
                 obs_selected = obs_var.sel(
                     time=obs_var.time.dt.month.isin(new_month))
-
+                logger.debug('Set obs data done with option 2')
             try:
                 obs_selected = obs_selected.sel(lat=case_events.lat.values,
                                                 lon=case_events.lon.values)
@@ -77,11 +78,12 @@ def Aux_SelectEvents(f, var_file, cases_dir, data_dir, out_dir,
 
             if mode_single_obs is True:
                 logger.debug('mode_single_obs is True')
-                import numpy as np
                 obs_selected = obs_selected.sel(
-                    time=obs_selected.time.dt.year.isin(np.unique(cfsv2_years_no_new_month)))
+                    time=obs_selected.time.dt.year.isin(
+                        np.unique(cfsv2_years_no_new_month)))
             else:
                 logger.debug('mode_single_obs is False')
+                logger.warning('mode_single_obs is set to False')
                 aux_obs_selected = []
                 for y in cfsv2_years_no_new_month:
                     aux_obs_selected.append(

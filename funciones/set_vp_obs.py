@@ -29,6 +29,7 @@ if output_exists is False:
 
     for n_v in name_variables:
         n_v_exist = os.path.isfile(f'{out_dir}{n_v}_JJA_{v}_w_detrend.nc')
+        n_v_exist = False
         if n_v_exist is False:
             logger.info(f'Computando {n_v}...')
             data = xr.open_dataset(f'{raw_data_dir}ERA5_{v}_40-20.nc')
@@ -47,9 +48,10 @@ if output_exists is False:
             data = Weights(data)
             data = data.rolling(time=3, center=True).mean()
 
-            data_mm = data.sel(time=data.time.dt.month.isin(7))
+            #data_mm = data.sel(time=data.time.dt.month.isin(7))
             logger.info('Detrend...')
-            data_mm = xrFieldTimeDetrend(data_mm, 'time')
+            #data_mm = xrFieldTimeDetrend(data_mm, 'time')
+            data_mm = xrFieldTimeDetrend(data, 'time')
             logger.info('to_netcdf...')
             data_mm = data_mm + data.mean('time')
             data_mm.to_netcdf(f'{out_dir}{n_v}_JJA_{v}_w_detrend.nc')
@@ -83,8 +85,14 @@ if output_exists is False:
     w = VectorWind(uwnd, vwnd)
 
     vp = w.sfvp()[1]
-    vp.to_netcdf(f'{out_dir}vp_jja_from_{v}_w.nc')
-    del vp
+
+    aux = vp.drop('variable').to_dataset().sel(variable=0)
+    aux = aux.sel(time=aux.time.dt.month.isin([6, 7, 8])) # pesa menos
+    aux = ((aux.groupby('time.month') - aux.groupby('time.month').mean('time'))
+           / aux.groupby('time.month').std('time'))  # standarizacion
+
+    aux.to_netcdf(f'{out_dir}vp_jja_from_{v}_w.nc')
+    del vp, aux
     logger.info('Done')
 
 vp = xr.open_dataset(f'{out_dir}vp_jja_from_{v}_w.nc')
