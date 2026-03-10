@@ -166,20 +166,24 @@ new_month=7
 new_L=0
 #files = ['CFSv2_simultaneos_dobles_ep_cp_neg_SON.nc']
 # SST ------------------------------------------------------------------------ #
-logger.info('SST')
-var_file = 'sst_jja_detrend.nc'
-Run(files, var_file, div, new_month, new_L, data_dir=data_dir, obs_var=sst)
+# logger.info('SST')
+# var_file = 'sst_jja_detrend.nc'
+# Run(files, var_file, div, new_month, new_L, data_dir=data_dir, obs_var=sst)
+#
+# # HGT ------------------------------------------------------------------------ #
+# logger.info('HGT')
+# var_file = 'hgt_jja_detrend.nc'
+# Run(files, var_file, div, new_month, new_L, data_dir=data_dir, obs_var=hgt)
+#
+# # vpot ----------------------------------------------------------------------- #
+# logger.info('VPOT200')
+# var_file = 'vpot200_jja_detrend.nc'
+# Run(files, var_file, div, new_month, new_L, data_dir=data_dir, obs_var=vp)
 
-# HGT ------------------------------------------------------------------------ #
-logger.info('HGT')
-var_file = 'hgt_jja_detrend.nc'
-Run(files, var_file, div, new_month, new_L, data_dir=data_dir, obs_var=hgt)
-
-# vpot ----------------------------------------------------------------------- #
-logger.info('VPOT200')
-var_file = 'vpot200_jja_detrend.nc'
+# sf ------------------------------------------------------------------------- #
+logger.info('SF200')
+var_file = 'sf_jja_detrend.nc'
 Run(files, var_file, div, new_month, new_L, data_dir=data_dir, obs_var=vp)
-
 # ---------------------------------------------------------------------------- #
 logger.info('Done')
 
