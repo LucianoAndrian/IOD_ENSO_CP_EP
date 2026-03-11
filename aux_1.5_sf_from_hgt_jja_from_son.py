@@ -1,40 +1,10 @@
 """
-Test: streamfunction from geopotential height
+Test: streamfunction from geopotential height JJA
 (anteriormente, usado en las comp. observadas, daba muy mal)
 """
 # ---------------------------------------------------------------------------- #
-save = False
-out_dir = ''
-
-data_dir = ''
-# ---------------------------------------------------------------------------- #
-import numpy as np
-import xarray as xr
-from multiprocessing import Process
-from funciones.select_variables_cfsv2 import SelectVariables
 import os
 os.environ['HDF5_USE_FILE_LOCKING'] = 'FALSE'
-from funciones.general_utils import init_logger
-import logging
-import warnings
-warnings.simplefilter("ignore")
-
-from funciones.set_sst_obs import sst
-from funciones.set_hgt_obs import hgt
-from funciones.set_vp_obs import vp
-import cftime
-
-# ---------------------------------------------------------------------------- #
-logger = init_logger('aux_1.5_from_hgt_son.log')
-
-# ---------------------------------------------------------------------------- #
-"""
-Aux test JJA
-Pre-procesamiento hgt200, sst
-Anomalías respecto a la climatologia del hindcast y detrend de las anomalias
-(similar 2_fixCFSv2_DMI_N34.py)
-"""
-# ---------------------------------------------------------------------------- #
 import xarray as xr
 import numpy as np
 from funciones.SelectNMME import SelectNMMEFiles
@@ -44,6 +14,9 @@ from funciones.preselect_utils import TwoClim_Anom_Seasons, \
 from funciones.general_utils import init_logger
 import warnings
 warnings.simplefilter("ignore")
+
+# ---------------------------------------------------------------------------- #
+logger = init_logger('aux_1.5_from_hgt_son.log')
 
 # ---------------------------------------------------------------------------- #
 out_dir = '/pikachu/datos/luciano.andrian/cases_fields/'
@@ -58,7 +31,7 @@ def SaveNC(data, dir):
     logger.info('Data saved')
 
 # ---------------------------------------------------------------------------- #
-logger = init_logger('aux_0_preselect_jja_cfsv2.log')
+logger = init_logger('aux_1.5_sf_from_hgt_jja_from_son.log')
 
 # ---------------------------------------------------------------------------- #
 
