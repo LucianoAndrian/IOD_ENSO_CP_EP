@@ -13,6 +13,8 @@ from funciones.general_utils import init_logger
 import warnings
 warnings.simplefilter("ignore")
 
+from funciones.preselect_utils import purge_extra_dim
+
 # ---------------------------------------------------------------------------- #
 out_dir = '/pikachu/datos/luciano.andrian/cases_fields_EP_CP/tk/'
 
@@ -25,26 +27,33 @@ logger = init_logger('6_selectvariables_cfsv2_tk.py')
 
 # Funcion -------------------------------------------------------------------- #
 def Aux_SelectEvents(f, var_file, cases_dir, data_dir, out_dir,
-                     replace_name):
+                     replace_name, test_mode):
 
     aux_cases = xr.open_dataset(f'{cases_dir}{f}')
     aux_cases = aux_cases.rename({list(aux_cases.data_vars)[0]:'index'})
 
     data_var = xr.open_dataset(f'{data_dir}{var_file}')
+    if test_mode:
+        data_var = purge_extra_dim(data_var,
+                               dims_to_keep=['L', 'lat', 'lon', 'r', 'time'])
+        data_var = data_var.sel(lat=slice(-90,20))
+
     case_events = SelectVariables(aux_cases, data_var)
 
     f_name = f.replace(replace_name, "")
     var_name = var_file.split('_')[0]
+    logger.info(f'saving {out_dir}{var_name}_{f_name}')
     case_events.to_netcdf(f'{out_dir}{var_name}_{f_name}')
 
 def Run(files, var_file, div, cases_dir=cases_date_dir, data_dir=data_dir,
-        out_dir=out_dir, replace_name='CFSv2_'):
+        out_dir=out_dir, replace_name='CFSv2_', test_mode=False):
     logger.info(f'Run()...')
+    logger.warning('Test Mode = True ')
     for i in range(0, len(files), div):
         batch = files[i:i + div]
         processes = [Process(target=Aux_SelectEvents,
                              args=(f, var_file, cases_dir, data_dir, out_dir,
-                                   replace_name))
+                                   replace_name, test_mode))
                      for f in batch]
 
         for p in processes:
@@ -102,6 +111,11 @@ Run(files, var_file, div, data_dir=data_dir)
 logger.info('prec')
 var_file = 'prec_son.nc'
 Run(files, var_file, div, data_dir=data_dir)
+
+# sf ------------------------------------------------------------------------- #
+logger.info('SF200')
+var_file = 'sf_son_detrend.nc'
+Run(files, var_file, div, data_dir=data_dir, test_mode=True)
 
 # ---------------------------------------------------------------------------- #
 logger.info('Done')

@@ -4,7 +4,7 @@ Composites con el modelo CFSv2
 Por ahora, se mantiene el orden de las figuras de 2 filas y 3 columnas
 """
 # ---------------------------------------------------------------------------- #
-save = True
+save = False
 out_dir = '/home/luciano.andrian/doc/IOD_ENSO_CP_EP/salidas/'
 
 cases_fields = '/pikachu/datos/luciano.andrian/cases_fields_EP_CP/'
@@ -13,6 +13,7 @@ sig_dir = '/pikachu/datos/luciano.andrian/cases_fields_EP_CP/sig/'
 # ---------------------------------------------------------------------------- #
 import os
 os.environ['HDF5_USE_FILE_LOCKING'] = 'FALSE'
+import numpy as np
 import xarray as xr
 import pandas as pd
 pd.options.mode.chained_assignment = None
@@ -26,6 +27,7 @@ warnings.filterwarnings("ignore")
 from funciones.plots_utils import PlotFinal
 from funciones.general_utils import Weights
 from funciones.scales_and_cbars import get_scales, get_cbars
+from funciones.waf_utils import WAF
 
 if save:
     dpi = 300
@@ -239,7 +241,8 @@ variables = ['sst', 'hgt', 'vpot200']
 aux_scales = ['t_comp_cfsv2',  'hgt_comp_cfsv2', 'vpot200_cfsv2']
 aux_cbar = ['cbar_rdbu', 'cbar_rdbu', 'cbar_rdbu']
 
-for i in ['tk', 'td', 'n']:
+#for i in ['tk', 'td', 'n']:
+for i in ['tk']:
     i_dir = f'{cases_fields}{i}/'
     s_dir = f'{sig_dir}{i}/'
 
@@ -292,6 +295,71 @@ for i in ['tk', 'td', 'n']:
                 ocean_mask = False
                 high = 1.3
 
+            elif v == 'hgt':
+                aux_cases = OpenSetCases(var='sf',
+                                         idx1='dmi', idx2='ep', idx3='cp',
+                                         phase=f,
+                                         dir=i_dir)
+
+                aux_cases_ordenados, _ = MakeComposite(aux_cases)
+
+
+                px_ordenados = []
+                py_ordenados = []
+                for p in aux_cases_ordenados.plots:
+
+                    c = aux_cases_ordenados.sel(plots=p).drop_dims('Z')
+
+                    px, py = WAF(aux_cases['neutros'], c, c.lon, c.lat,
+                                 reshape=True, variable='hgt', hpalevel=200)
+                    weights = np.transpose(np.tile(-2 * np.cos(
+                        c.lat.values * 1 * np.pi / 180) + 2.1, (360, 1)))
+
+                    weights_arr = np.zeros_like(px)
+                    weights_arr[0, :, :] = weights
+                    px *= weights_arr
+                    py *= weights_arr
+
+                    lat, lon = px[0].shape
+                    px_da = xr.DataArray(
+                        px[0],
+                        dims=("lat", "lon"),
+                        coords={
+                            "lat": aux_cases['neutros'].lat.values,
+                            "lon": aux_cases['neutros'].lon.values,
+                        },
+                        name="px"
+                    )
+
+                    py_da = xr.DataArray(
+                        py[0],
+                        dims=("lat", "lon"),
+                        coords={
+                            "lat": aux_cases['neutros'].lat.values,
+                            "lon": aux_cases['neutros'].lon.values,
+                        },
+                        name="py"
+                    )
+
+                    px_ordenados.append(px_da)
+                    py_ordenados.append(py_da)
+
+                px_ordenados = xr.concat(px_ordenados, dim='plots')
+                py_ordenados = xr.concat(py_ordenados, dim='plots')
+
+                map = 'hs'
+                data_ctn = cases_ordenados
+                levels_ctn = scale
+                ocean_mask = False
+                high = 1.3
+
+                wafx = px_ordenados
+                wafy = py_ordenados
+                waf_scale = None
+                waf_label = 10e-5
+                waf_step = 6,
+                data_waf = aux_cases['neutros']
+
             else:
                 map = 'hs'
                 data_ctn = cases_ordenados
@@ -307,7 +375,10 @@ for i in ['tk', 'td', 'n']:
                       num_cases=None, num_cases_data=None, num_cols=3,
                       ocean_mask=ocean_mask, pdf=False, levels_ctn=levels_ctn,
                       data_ctn_no_ocean_mask=True,
-                      sig_points=cases_sig, hatches='......')
+                      sig_points=cases_sig, hatches='......',
+                      wafx=wafx, wafy=wafy,
+                      waf_scale=None, waf_label=10e-5, waf_step=6,
+                      data_waf=data_waf)
 
 print('# --------------------------------------------------------------------#')
 print('# --------------------------------------------------------------------#')
