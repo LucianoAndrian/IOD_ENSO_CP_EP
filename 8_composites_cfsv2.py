@@ -27,7 +27,7 @@ warnings.filterwarnings("ignore")
 from funciones.plots_utils import PlotFinal
 from funciones.general_utils import Weights
 from funciones.scales_and_cbars import get_scales, get_cbars
-from funciones.waf_utils import WAF
+from funciones.waf_utils import WAF_from_geopot
 
 if save:
     dpi = 300
@@ -233,6 +233,13 @@ def SigMask(cases, sig):
     return xr.concat(cases_sig, dim='plots')
 
 # ---------------------------------------------------------------------------- #
+hgt_clim = xr.open_dataset('/pikachu/datos/luciano.andrian/'
+                       'val_clim_cfsv2/hindcast_cfsv2_meanclim_son.nc')
+hgt_clim = hgt_clim.rename({'hgt':'var'})
+hgt_clim = hgt_clim.drop('P')
+
+# ---------------------------------------------------------------------------- #
+
 variables = ['sst', 'tref', 'prec', 'hgt']
 aux_scales = ['t_comp_cfsv2', 't_comp_cfsv2', 'pp_comp_cfsv2', 'hgt_comp_cfsv2']
 aux_cbar = ['cbar_rdbu', 'cbar_rdbu', 'pp_11', 'cbar_rdbu']
@@ -259,15 +266,20 @@ for i in ['tk']:
 
             cases_ordenados, titles = MakeComposite(cases)
 
-            sig = OpenSetCases(var=v,
-                               idx1='dmi', idx2='ep', idx3='cp',
-                               phase=f,
-                               dir=s_dir,
-                               sig=True)
+            # sig = OpenSetCases(var=v,
+            #                    idx1='dmi', idx2='ep', idx3='cp',
+            #                    phase=f,
+            #                    dir=s_dir,
+            #                    sig=True)
+            #
+            # sig_ordenados = aux_ordenar_sig(sig)
+            #
+            # cases_sig = SigMask(cases_ordenados, sig_ordenados)
+            cases_sig = None
 
-            sig_ordenados = aux_ordenar_sig(sig)
-
-            cases_sig = SigMask(cases_ordenados, sig_ordenados)
+            wafx = None
+            wafy = None
+            data_waf = None
 
             if v == 'tref' or v == 'prec':
                 map = 'sa'
@@ -296,22 +308,13 @@ for i in ['tk']:
                 high = 1.3
 
             elif v == 'hgt':
-                aux_cases = OpenSetCases(var='sf',
-                                         idx1='dmi', idx2='ep', idx3='cp',
-                                         phase=f,
-                                         dir=i_dir)
-
-                aux_cases_ordenados, _ = MakeComposite(aux_cases)
-
-
                 px_ordenados = []
                 py_ordenados = []
-                for p in aux_cases_ordenados.plots:
+                for p in cases_ordenados.plots:
 
-                    c = aux_cases_ordenados.sel(plots=p).drop_dims('Z')
+                    c = cases_ordenados.sel(plots=p)
 
-                    px, py = WAF(aux_cases['neutros'], c, c.lon, c.lat,
-                                 reshape=True, variable='hgt', hpalevel=200)
+                    px, py = WAF_from_geopot(hgt_clim, c, c.lon, c.lat, hpalevel=200)
                     weights = np.transpose(np.tile(-2 * np.cos(
                         c.lat.values * 1 * np.pi / 180) + 2.1, (360, 1)))
 
@@ -325,8 +328,8 @@ for i in ['tk']:
                         px[0],
                         dims=("lat", "lon"),
                         coords={
-                            "lat": aux_cases['neutros'].lat.values,
-                            "lon": aux_cases['neutros'].lon.values,
+                            "lat": hgt_clim.lat.values,
+                            "lon": hgt_clim.lon.values,
                         },
                         name="px"
                     )
@@ -335,8 +338,8 @@ for i in ['tk']:
                         py[0],
                         dims=("lat", "lon"),
                         coords={
-                            "lat": aux_cases['neutros'].lat.values,
-                            "lon": aux_cases['neutros'].lon.values,
+                            "lat": hgt_clim.lat.values,
+                            "lon": hgt_clim.lon.values,
                         },
                         name="py"
                     )
@@ -358,7 +361,7 @@ for i in ['tk']:
                 waf_scale = None
                 waf_label = 10e-5
                 waf_step = 6,
-                data_waf = aux_cases['neutros']
+                data_waf = hgt_clim
 
             else:
                 map = 'hs'
@@ -371,14 +374,14 @@ for i in ['tk']:
             PlotFinal(data=cases_ordenados, levels=scale, cmap=cbar,
                       titles=titles, namefig=name_fig, map=map,
                       save=save, dpi=dpi, out_dir=out_dir,
-                      data_ctn=data_ctn, color_ctn='k', high=high,
+                      data_ctn=data_ctn, color_ctn='k', high=high+3,
                       num_cases=None, num_cases_data=None, num_cols=3,
                       ocean_mask=ocean_mask, pdf=False, levels_ctn=levels_ctn,
                       data_ctn_no_ocean_mask=True,
                       sig_points=cases_sig, hatches='......',
                       wafx=wafx, wafy=wafy,
                       waf_scale=None, waf_label=10e-5, waf_step=6,
-                      data_waf=data_waf)
+                      data_waf=data_waf, width=15)
 
 print('# --------------------------------------------------------------------#')
 print('# --------------------------------------------------------------------#')
